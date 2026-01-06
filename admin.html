@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | بدّل وبيع</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-title {
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card .label {
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .admin-section {
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 15px;
+            text-align: right;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .admin-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .admin-table tr:hover {
+            background: var(--glass);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-approved {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin: 0 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-approve {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        .btn-reject {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid transparent;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .login-box {
+            max-width: 400px;
+            margin: 150px auto;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 40px;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .tabs-admin {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-admin {
+            padding: 10px 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .tab-admin.active {
+            background: var(--gradient);
+            border: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+
+        .contact-info {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contact-info .phone {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            direction: ltr;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="/" class="logo">🛒 بدّل <span class="highlight">وبيع</span></a>
+                <span style="color: var(--secondary);">🔧 لوحة التحكم</span>
+                <div class="nav-actions" id="adminActions" style="display:none;">
+                    <span id="adminName"></span>
+                    <button class="btn btn-outline" onclick="logout()">تسجيل الخروج</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Login Form -->
+    <div id="loginSection" class="login-box">
+        <h2>🔐 دخول المشرف</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="adminEmail" placeholder="admin@badel.com" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="adminPassword" placeholder="••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">دخول</button>
+        </form>
+        <p style="text-align:center; margin-top:20px; color: var(--text-muted); font-size:0.9rem;">
+            أول مرة؟ <a href="#" onclick="setupAdmin()" style="color:var(--primary);">إنشاء حساب المشرف</a>
+        </p>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardSection" class="admin-container hidden">
+        <div class="admin-header">
+            <h1 class="admin-title">📊 لوحة التحكم</h1>
+            <div class="contact-info">
+                <span>📞 رقم التواصل للعمولة:</span>
+                <span class="phone">+961 71 163 211</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">👥</div>
+                <div class="number" id="totalUsers">0</div>
+                <div class="label">إجمالي المستخدمين</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🟢</div>
+                <div class="number" id="activeUsers">0</div>
+                <div class="label">نشطين (24 ساعة)</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📋</div>
+                <div class="number" id="totalAds">0</div>
+                <div class="label">إجمالي الإعلانات</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⏳</div>
+                <div class="number" id="pendingAds">0</div>
+                <div class="label">بانتظار الموافقة</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <div class="number" id="approvedAds">0</div>
+                <div class="label">موافق عليها</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">❌</div>
+                <div class="number" id="rejectedAds">0</div>
+                <div class="label">مرفوضة</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-admin">
+            <button class="tab-admin active" onclick="showTab('pending')">⏳ بانتظار الموافقة</button>
+            <button class="tab-admin" onclick="showTab('ads')">📋 كل الإعلانات</button>
+            <button class="tab-admin" onclick="showTab('users')">👥 المستخدمين</button>
+        </div>
+
+        <!-- Pending Ads -->
+        <div id="pendingTab" class="admin-section">
+            <h3 class="section-title">⏳ إعلانات بانتظار الموافقة</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>الفئة</th>
+                        <th>السعر</th>
+                        <th>المستخدم</th>
+                        <th>الهاتف</th>
+                        <th>التاريخ</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingAdsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- All Ads -->
+        <div id="adsTab" class="admin-section hidden">
+            <h3 class="section-title">📋 جميع الإعلانات</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>العنوان</th>
+                        <th>الفئة</th>
+                        <th>السعر</th>
+                        <th>الحالة</th>
+                        <th>المستخدم</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="allAdsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Users -->
+        <div id="usersTab" class="admin-section hidden">
+            <h3 class="section-title">👥 المستخدمين</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>البريد</th>
+                        <th>الهاتف</th>
+                        <th>الدور</th>
+                        <th>آخر نشاط</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let token = localStorage.getItem('adminToken');
+
+        // Check auth on load
+        if (token) checkAuth();
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.user && data.user.role === 'admin') {
+                    showDashboard(data.user);
+                } else {
+                    logout();
+                }
+            } catch (e) { logout(); }
+        }
+
+        function showDashboard(user) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('adminActions').style.display = 'flex';
+            document.getElementById('adminName').textContent = `مرحباً، ${user.name}`;
+            loadStats();
+            loadPendingAds();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            try {
+                const res = await fetch(`${API}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.token && data.user.role === 'admin') {
+                    token = data.token;
+                    localStorage.setItem('adminToken', token);
+                    showDashboard(data.user);
+                } else {
+                    alert('❌ غير مصرح - للمشرفين فقط');
+                }
+            } catch (e) { alert('خطأ في الاتصال'); }
+        });
+
+        async function setupAdmin() {
+            try {
+                const res = await fetch(`${API}/api/admin/setup`, { method: 'POST' });
+                const data = await res.json();
+                alert(`✅ ${data.message}\nالبريد: ${data.email}\nكلمة المرور: ${data.password}`);
+            } catch (e) { alert('خطأ - ربما يوجد مشرف مسبقاً'); }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            token = null;
+            location.reload();
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API}/api/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const { stats } = await res.json();
+                document.getElementById('totalUsers').textContent = stats.totalUsers;
+                document.getElementById('activeUsers').textContent = stats.activeUsers;
+                document.getElementById('totalAds').textContent = stats.totalAds;
+                document.getElementById('pendingAds').textContent = stats.pendingAds;
+                document.getElementById('approvedAds').textContent = stats.approvedAds;
+                document.getElementById('rejectedAds').textContent = stats.rejectedAds;
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadPendingAds() {
+            try {
+                const res = await fetch(`${API}/api/admin/pending-ads`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const { ads } = await res.json();
+                const tbody = document.getElementById('pendingAdsTable');
+                tbody.innerHTML = ads.length ? ads.map(ad => `
+                    <tr>
+                        <td>${ad.title}</td>
+                        <td>${getCategoryName(ad.category)}</td>
+                        <td>${ad.price}</td>
+                        <td>${ad.user?.name || '-'}</td>
+                        <td style="direction:ltr">${ad.user?.phone || '-'}</td>
+                        <td>${new Date(ad.createdAt).toLocaleDateString('ar')}</td>
+                        <td>
+                            <button class="action-btn btn-approve" onclick="approveAd('${ad._id}')">✓ قبول</button>
+                            <button class="action-btn btn-reject" onclick="rejectAd('${ad._id}')">✗ رفض</button>
+                        </td>
+                    </tr>
+                `).join('') : '<tr><td colspan="7" class="empty-state">لا توجد إعلانات بانتظار الموافقة</td></tr>';
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadAllAds() {
+            try {
+                const res = await fetch(`${API}/api/admin/ads`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const { ads } = await res.json();
+                const tbody = document.getElementById('allAdsTable');
+                tbody.innerHTML = ads.length ? ads.map(ad => `
+                    <tr>
+                        <td>${ad.title}</td>
+                        <td>${getCategoryName(ad.category)}</td>
+                        <td>${ad.price}</td>
+                        <td><span class="status-badge status-${ad.status}">${getStatusName(ad.status)}</span></td>
+                        <td>${ad.user?.name || '-'}</td>
+                        <td><button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button></td>
+                    </tr>
+                `).join('') : '<tr><td colspan="6" class="empty-state">لا توجد إعلانات</td></tr>';
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API}/api/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const { users } = await res.json();
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td style="direction:ltr">${u.phone || '-'}</td>
+                        <td>${u.role === 'admin' ? '🔧 مشرف' : '👤 مستخدم'}</td>
+                        <td>${new Date(u.lastActive).toLocaleDateString('ar')}</td>
+                        <td>${u.role !== 'admin' ? `<button class="action-btn btn-delete" onclick="deleteUser('${u._id}')">🗑️</button>` : ''}</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function approveAd(id) {
+            if (!confirm('هل تريد قبول هذا الإعلان؟')) return;
+            await fetch(`${API}/api/admin/ads/${id}/approve`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadStats(); loadPendingAds();
+        }
+
+        async function rejectAd(id) {
+            const reason = prompt('سبب الرفض (اختياري):');
+            await fetch(`${API}/api/admin/ads/${id}/reject`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            });
+            loadStats(); loadPendingAds();
+        }
+
+        async function deleteAd(id) {
+            if (!confirm('هل تريد حذف هذا الإعلان؟')) return;
+            await fetch(`${API}/api/admin/ads/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadStats(); loadAllAds();
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('هل تريد حذف هذا المستخدم وجميع إعلاناته؟')) return;
+            await fetch(`${API}/api/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadStats(); loadUsers();
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-admin').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('pendingTab').classList.add('hidden');
+            document.getElementById('adsTab').classList.add('hidden');
+            document.getElementById('usersTab').classList.add('hidden');
+            document.getElementById(tab + 'Tab').classList.remove('hidden');
+            if (tab === 'ads') loadAllAds();
+            if (tab === 'users') loadUsers();
+            if (tab === 'pending') loadPendingAds();
+        }
+
+        function getCategoryName(cat) {
+            const names = { home: '🏠 منزلية', cars: '🚗 سيارات', realestate: '🏗️ عقارات', services: '🔧 خدمات' };
+            return names[cat] || cat;
+        }
+        function getStatusName(status) {
+            const names = { pending: 'بانتظار', approved: 'موافق', rejected: 'مرفوض' };
+            return names[status] || status;
+        }
+    </script>
+</body>
+
+</html>

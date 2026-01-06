@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="بدّل وبيع - منصة البيع والشراء المحلية">
+    <title>بدّل وبيع | Badel w Bi3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="#" class="logo">🛒 بدّل <span class="highlight">وبيع</span></a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#home">الرئيسية</a></li>
+                    <li><a href="#categories">الفئات</a></li>
+                    <li><a href="#listings">الإعلانات</a></li>
+                    <li><a href="#subscriptions">الاشتراكات</a></li>
+                </ul>
+                <div class="nav-actions" id="navActions">
+                    <button class="btn btn-outline" id="loginBtn">تسجيل الدخول</button>
+                    <button class="btn btn-primary" id="postAdBtn">+ أضف إعلانك</button>
+                </div>
+                <div class="nav-actions user-menu hidden" id="userMenu">
+                    <span id="userName"></span>
+                    <button class="btn btn-outline" id="logoutBtn">خروج</button>
+                </div>
+                <button class="mobile-menu" id="mobileMenu">☰</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="container">
+            <div class="hero-content">
+                <span class="badge">🚀 قريبًا الإطلاق!</span>
+                <h1>بيع واشتري بسهولة<br><span class="gradient-text">من دون أي وسيط</span></h1>
+                <p>منصة عربية حديثة للبيع والشراء المحلي. انشر إعلانك بثواني، تواصل مباشرة، بدون عمولات.</p>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 ابحث عن منتج، سيارة، عقار...">
+                    <button class="btn btn-primary" id="searchBtn">بحث</button>
+                </div>
+                <div class="hero-stats" id="heroStats">
+                    <div class="stat"><span id="statAds">0</span><small>إعلان</small></div>
+                    <div class="stat"><span id="statUsers">0</span><small>مستخدم</small></div>
+                    <div class="stat"><span>4</span><small>فئات</small></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="categories" id="categories">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">📍 الفئات</span>
+                <h2>شو فيك تبيع أو تشتري؟</h2>
+            </div>
+            <div class="categories-grid">
+                <div class="category-card" data-cat="home">
+                    <div class="icon">🏠</div>
+                    <h3>منتجات منزلية</h3>
+                    <p id="countHome">0 إعلان</p>
+                </div>
+                <div class="category-card" data-cat="cars">
+                    <div class="icon">🚗</div>
+                    <h3>سيارات</h3>
+                    <p id="countCars">0 إعلان</p>
+                </div>
+                <div class="category-card" data-cat="realestate">
+                    <div class="icon">🏗️</div>
+                    <h3>أراضي وعقارات</h3>
+                    <p id="countRealestate">0 إعلان</p>
+                </div>
+                <div class="category-card" data-cat="services">
+                    <div class="icon">🔧</div>
+                    <h3>أجهزة وخدمات</h3>
+                    <p id="countServices">0 إعلان</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="listings" id="listings">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">⭐ إعلانات مميزة</span>
+                <h2>أحدث الإعلانات</h2>
+            </div>
+            <div class="tabs">
+                <button class="tab active" data-tab="all">الكل</button>
+                <button class="tab" data-tab="home">منتجات منزلية</button>
+                <button class="tab" data-tab="cars">سيارات</button>
+                <button class="tab" data-tab="realestate">عقارات</button>
+            </div>
+            <div class="listings-grid" id="listingsGrid">
+                <div class="empty-state" id="emptyState">
+                    <p>🔄 جاري تحميل الإعلانات...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="subscriptions" id="subscriptions">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">👤 الاشتراكات</span>
+                <h2>اختر خطتك</h2>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-icon">📝</div>
+                    <h3>عادية</h3>
+                    <div class="price"><span>$0</span>/شهر</div>
+                    <ul>
+                        <li>✓ 5 إعلانات بالشهر</li>
+                        <li>✓ ظهور عادي</li>
+                        <li>✓ تواصل مباشر</li>
+                        <li class="disabled">✗ إعلان مميز</li>
+                    </ul>
+                    <button class="btn btn-outline">ابدأ مجانًا</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="popular">الأكثر شعبية</div>
+                    <div class="pricing-icon">⭐</div>
+                    <h3>ذهبية</h3>
+                    <div class="price"><span>$9.99</span>/شهر</div>
+                    <ul>
+                        <li>✓ 20 إعلان بالشهر</li>
+                        <li>✓ ظهور أقوى</li>
+                        <li>✓ وصول أسرع للزبائن</li>
+                        <li>✓ إعلانات مميزة</li>
+                    </ul>
+                    <button class="btn btn-primary">اشترك الآن</button>
+                </div>
+            </div>
+            <p class="payment-note">💰 الدفع سريع وآمن عبر <strong>Wish Money</strong></p>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">⭐ كيف بيشتغل</span>
+                <h2>خطوات بسيطة للبدء</h2>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="num">1</div>
+                    <div class="icon">📝</div>
+                    <h3>سجّل حسابك</h3>
+                    <p>أنشئ حساب مجاني بثواني</p>
+                </div>
+                <div class="step">
+                    <div class="num">2</div>
+                    <div class="icon">📸</div>
+                    <h3>انشر إعلانك</h3>
+                    <p>أضف صور ووصف منتجك</p>
+                </div>
+                <div class="step">
+                    <div class="num">3</div>
+                    <div class="icon">💬</div>
+                    <h3>تواصل مباشرة</h3>
+                    <p>تواصل مع الزبائن مباشرة</p>
+                </div>
+                <div class="step">
+                    <div class="num">4</div>
+                    <div class="icon">🤝</div>
+                    <h3>أتمم الصفقة</h3>
+                    <p>أكمل البيع بثقة وأمان</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>جاهز تبدأ؟</h2>
+            <p>انضم لآلاف المستخدمين وابدأ البيع والشراء اليوم</p>
+            <button class="btn btn-primary btn-lg" id="ctaBtn">+ أضف إعلانك الأول</button>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo">🛒 بدّل <span class="highlight">وبيع</span></a>
+                    <p>منصة عربية لتنشيط البيع والشراء المحلي بثقة.</p>
+                    <div class="social">
+                        <a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">💬</a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>روابط</h4><a href="#home">الرئيسية</a><a href="#categories">الفئات</a><a
+                        href="#listings">الإعلانات</a>
+                </div>
+                <div class="footer-links">
+                    <h4>الفئات</h4><a href="#">منتجات منزلية</a><a href="#">سيارات</a><a href="#">عقارات</a>
+                </div>
+                <div class="footer-links">
+                    <h4>الدعم</h4><a href="#">مركز المساعدة</a><a href="#">الشروط</a><a href="#">اتصل بنا</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 بدّل وبيع. جميع الحقوق محفوظة. صنع بـ ❤️ في لبنان</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+            <h2>🔐 تسجيل الدخول</h2>
+            <form id="loginForm">
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">دخول</button>
+            </form>
+            <p class="modal-switch">ليس لديك حساب؟ <a href="#" onclick="switchModal('registerModal')">سجّل الآن</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('registerModal')">✕</button>
+            <h2>📝 إنشاء حساب</h2>
+            <form id="registerForm">
+                <div class="form-group"><label>الاسم</label><input type="text" id="regName" required></div>
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="regPhone"
+                        placeholder="+961 XX XXX XXX"></div>
+                <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" minlength="6"
+                        required></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">إنشاء حساب</button>
+            </form>
+            <p class="modal-switch">لديك حساب؟ <a href="#" onclick="switchModal('loginModal')">سجّل دخول</a></p>
+        </div>
+    </div>
+
+    <!-- Post Ad Modal -->
+    <div class="modal" id="postAdModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('postAdModal')">✕</button>
+            <h2>📣 أضف إعلانك</h2>
+            <div class="commission-notice">
+                <p>⚠️ <strong>ملاحظة:</strong> يتم فرض عمولة بسيطة على كل إعلان.</p>
+                <p>للدفع والموافقة السريعة، تواصل مع المشرف:</p>
+                <a href="tel:+96171163211" class="phone-link">📞 +961 71 163 211</a>
+            </div>
+            <form id="adForm">
+                <div class="form-group"><label>عنوان الإعلان</label><input type="text" id="adTitle"
+                        placeholder="مثال: سيارة BMW للبيع" required></div>
+                <div class="form-group"><label>الفئة</label><select id="adCategory" required>
+                        <option value="">اختر الفئة</option>
+                        <option value="home">منتجات منزلية</option>
+                        <option value="cars">سيارات</option>
+                        <option value="realestate">عقارات</option>
+                        <option value="services">خدمات</option>
+                    </select></div>
+                <div class="form-group"><label>السعر</label><input type="text" id="adPrice" placeholder="$0.00"
+                        required></div>
+                <div class="form-group"><label>الموقع</label><input type="text" id="adLocation"
+                        placeholder="مثال: بيروت، لبنان" required></div>
+                <div class="form-group"><label>الوصف</label><textarea id="adDescription" rows="3"
+                        placeholder="أضف تفاصيل عن منتجك..." required></textarea></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">نشر الإعلان</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
