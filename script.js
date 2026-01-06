@@ -291,10 +291,8 @@ function setupEventListeners() {
             const data = await res.json();
             if (data.status === 'success') {
                 closeModal('postAdModal');
-                // Open WhatsApp for quick approval
-                if (confirm(`✅ ${data.message}\n\nهل تريد التواصل عبر واتساب للموافقة السريعة؟`)) {
-                    window.open('https://wa.me/96171163211?text=مرحباً، أريد الموافقة على إعلاني في بدّل وبيع', '_blank');
-                }
+                // Show success modal with WhatsApp button
+                openModal('successModal');
                 document.getElementById('adForm').reset();
             } else {
                 alert(data.message || 'خطأ في نشر الإعلان');
@@ -319,6 +317,12 @@ style.textContent = `
     .phone-link { display: inline-block; margin-top: 10px; padding: 10px 20px; background: var(--gradient-gold); color: var(--dark); border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
     .whatsapp-link { background: linear-gradient(135deg, #25D366 0%, #128C7E 100%) !important; color: white !important; }
     .whatsapp-link:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(37, 211, 102, 0.4); }
+    .success-modal { text-align: center; }
+    .success-icon { font-size: 4rem; margin-bottom: 20px; }
+    .success-modal h2 { color: #22c55e; margin-bottom: 15px; }
+    .success-modal p { color: var(--text-muted); margin-bottom: 20px; }
+    .whatsapp-btn { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.2rem; text-decoration: none; transition: all 0.3s; }
+    .whatsapp-btn:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(37, 211, 102, 0.4); }
 `;
 document.head.appendChild(style);
 
