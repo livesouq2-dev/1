@@ -206,6 +206,56 @@
             color: var(--secondary);
             direction: ltr;
         }
+
+        .btn-edit {
+            background: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+            border: 1px solid #6366f1;
+        }
+
+        /* Edit Modal */
+        .edit-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .edit-modal.active {
+            display: flex;
+        }
+
+        .edit-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .edit-content {
+            position: relative;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .edit-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -349,6 +399,48 @@
         </div>
     </div>
 
+    <!-- Edit Ad Modal -->
+    <div class="edit-modal" id="editAdModal">
+        <div class="edit-overlay" onclick="closeEditModal()"></div>
+        <div class="edit-content">
+            <button class="edit-close" onclick="closeEditModal()">✕</button>
+            <h2>✏️ تعديل الإعلان</h2>
+            <form id="adminEditForm">
+                <input type="hidden" id="editAdId">
+                <div class="form-group">
+                    <label>عنوان الإعلان</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>الفئة</label>
+                    <select id="editCategory" required>
+                        <option value="home">منتجات منزلية</option>
+                        <option value="cars">سيارات</option>
+                        <option value="realestate">عقارات</option>
+                        <option value="services">خدمات</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>السعر</label>
+                    <input type="text" id="editPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>الموقع</label>
+                    <input type="text" id="editLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>رقم الواتساب</label>
+                    <input type="text" id="editWhatsapp">
+                </div>
+                <div class="form-group">
+                    <label>الوصف</label>
+                    <textarea id="editDescription" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API = '';
         let token = localStorage.getItem('adminToken');
@@ -445,6 +537,7 @@
                         <td style="direction:ltr">${ad.user?.phone || '-'}</td>
                         <td>${new Date(ad.createdAt).toLocaleDateString('ar')}</td>
                         <td>
+                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}')">✏️ تعديل</button>
                             <button class="action-btn btn-approve" onclick="approveAd('${ad._id}')">✓ قبول</button>
                             <button class="action-btn btn-reject" onclick="rejectAd('${ad._id}')">✗ رفض</button>
                         </td>
@@ -550,6 +643,55 @@
             const names = { pending: 'بانتظار', approved: 'موافق', rejected: 'مرفوض' };
             return names[status] || status;
         }
+
+        // Edit Ad Functions
+        function openEditAd(id, title, category, price, location, whatsapp, description) {
+            document.getElementById('editAdId').value = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editPrice').value = price;
+            document.getElementById('editLocation').value = location;
+            document.getElementById('editWhatsapp').value = whatsapp;
+            document.getElementById('editDescription').value = description;
+            document.getElementById('editAdModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editAdModal').classList.remove('active');
+        }
+
+        document.getElementById('adminEditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editAdId').value;
+            const data = {
+                title: document.getElementById('editTitle').value,
+                category: document.getElementById('editCategory').value,
+                price: document.getElementById('editPrice').value,
+                location: document.getElementById('editLocation').value,
+                whatsapp: document.getElementById('editWhatsapp').value,
+                description: document.getElementById('editDescription').value
+            };
+            try {
+                const res = await fetch(`${API}/api/admin/ads/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.ad) {
+                    alert('✅ تم تعديل الإعلان بنجاح!');
+                    closeEditModal();
+                    loadPendingAds();
+                } else {
+                    alert(result.message || 'خطأ في التعديل');
+                }
+            } catch (e) {
+                alert('خطأ في الاتصال بالسيرفر');
+            }
+        });
     </script>
 </body>
 

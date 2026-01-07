@@ -124,6 +124,24 @@ router.patch('/ads/:id/reject', adminAuth, async (req, res) => {
     }
 });
 
+// Update/Edit ad (admin)
+router.put('/ads/:id', adminAuth, async (req, res) => {
+    try {
+        const { title, description, category, price, location, whatsapp } = req.body;
+        const ad = await Ad.findByIdAndUpdate(
+            req.params.id,
+            { title, description, category, price, location, whatsapp },
+            { new: true }
+        );
+        if (!ad) {
+            return res.status(404).json({ message: 'الإعلان غير موجود' });
+        }
+        res.json({ message: 'تم تعديل الإعلان', ad });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Delete ad
 router.delete('/ads/:id', adminAuth, async (req, res) => {
     try {
