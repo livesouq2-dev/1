@@ -6,13 +6,38 @@ const ADMIN_PHONE = '+961 71 163 211';
 let token = localStorage.getItem('token');
 let currentUser = null;
 
-// ===== Helper: File to Base64 =====
-function fileToBase64(file) {
+// ===== Helper: Compress and Convert Image to Base64 =====
+function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Resize if larger than maxWidth
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to compressed JPEG
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedBase64);
+            };
+            img.onerror = reject;
+        };
+        reader.onerror = reject;
     });
 }
 
@@ -25,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (file) {
                 const preview = document.getElementById('imagePreview');
                 const previewImg = document.getElementById('previewImg');
-                const base64 = await fileToBase64(file);
+                const base64 = await compressImage(file);
                 previewImg.src = base64;
                 preview.style.display = 'block';
             }
@@ -304,11 +329,11 @@ function setupEventListeners() {
     document.getElementById('adForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Get image as base64 if file selected
+        // Get image as compressed base64 if file selected
         let imageBase64 = '';
         const imageFile = document.getElementById('adImage').files[0];
         if (imageFile) {
-            imageBase64 = await fileToBase64(imageFile);
+            imageBase64 = await compressImage(imageFile);
         }
 
         const adData = {
