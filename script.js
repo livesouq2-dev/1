@@ -473,6 +473,21 @@ style.textContent = `
     .bottom-nav-add:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
     body { padding-bottom: 80px; }
     @media (min-width: 769px) { .bottom-nav { display: none; } body { padding-bottom: 0; } }
+    
+    /* Mobile Modal Responsive */
+    @media (max-width: 768px) {
+        .modal { padding: 10px; }
+        .modal-content { padding: 20px 15px; max-height: 90vh; overflow-y: auto; }
+        .modal h2 { font-size: 1.2rem; margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { font-size: 0.85rem; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px 12px; font-size: 0.9rem; }
+        .form-group textarea { rows: 2; }
+        .commission-notice { padding: 12px; margin-bottom: 15px; }
+        .commission-notice p { font-size: 0.85rem; margin: 3px 0; }
+        .phone-link, .whatsapp-link { padding: 8px 16px; font-size: 0.95rem; }
+        .btn { padding: 10px 20px; font-size: 0.95rem; }
+    }
 `;
 document.head.appendChild(style);
 
