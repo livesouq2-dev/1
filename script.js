@@ -391,6 +391,18 @@ function setupEventListeners() {
         }
     });
 
+    // Footer Help link
+    document.getElementById('footerHelp')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal('helpModal');
+    });
+
+    // Footer Terms link
+    document.getElementById('footerTerms')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal('termsModal');
+    });
+
     // Edit Ad Form
     document.getElementById('editAdForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -537,6 +549,13 @@ style.textContent = `
     /* Contact Link */
     .contact-link { color: #25D366 !important; font-weight: 700; }
     .contact-link:hover { color: #128C7E !important; }
+    
+    /* Page Modals (Help, Terms) */
+    .page-modal { max-height: 85vh; overflow-y: auto; }
+    .page-modal h2 { margin-bottom: 20px; }
+    .help-section, .terms-section { margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .help-section h3, .terms-section h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--secondary); }
+    .help-section p, .terms-section p { margin: 0; line-height: 1.8; color: var(--text-muted); }
     
     /* Bottom Navigation Bar */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 15px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }
