@@ -282,6 +282,7 @@ function setupEventListeners() {
             price: document.getElementById('adPrice').value,
             location: document.getElementById('adLocation').value,
             whatsapp: document.getElementById('adWhatsapp').value,
+            images: document.getElementById('adImage').value ? [document.getElementById('adImage').value] : [],
             description: document.getElementById('adDescription').value
         };
         try {
