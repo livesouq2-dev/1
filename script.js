@@ -118,7 +118,10 @@ function renderAds(ads) {
                 <span class="cat">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
                 <h3>${ad.title}</h3>
                 <p>📍 ${ad.location}</p>
-                <div class="price">${ad.price}</div>
+                <div class="listing-footer">
+                    <div class="price">${ad.price}</div>
+                    ${ad.whatsapp ? `<a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="listing-whatsapp">💬</a>` : ''}
+                </div>
             </div>
         </article>
     `).join('');
@@ -277,6 +280,7 @@ function setupEventListeners() {
             category: document.getElementById('adCategory').value,
             price: document.getElementById('adPrice').value,
             location: document.getElementById('adLocation').value,
+            whatsapp: document.getElementById('adWhatsapp').value,
             description: document.getElementById('adDescription').value
         };
         try {
@@ -462,6 +466,11 @@ style.textContent = `
     .btn-delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .btn-edit:hover, .btn-delete:hover { transform: scale(1.05); }
     .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    
+    /* Listing WhatsApp Button */
+    .listing-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .listing-whatsapp { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border-radius: 50%; font-size: 1.2rem; text-decoration: none; transition: 0.3s; }
+    .listing-whatsapp:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); }
     
     /* Bottom Navigation Bar */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 15px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }

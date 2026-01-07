@@ -25,6 +25,10 @@ const adSchema = new mongoose.Schema({
         type: String,
         required: [true, 'الموقع مطلوب']
     },
+    whatsapp: {
+        type: String,
+        required: [true, 'رقم الواتساب مطلوب']
+    },
     images: [{
         type: String
     }],

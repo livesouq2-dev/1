@@ -52,7 +52,7 @@ router.get('/my-ads', auth, async (req, res) => {
 // Create ad (protected) - requires approval
 router.post('/', auth, async (req, res) => {
     try {
-        const { title, description, category, price, location, images } = req.body;
+        const { title, description, category, price, location, whatsapp, images } = req.body;
 
         const ad = await Ad.create({
             title,
@@ -60,6 +60,7 @@ router.post('/', auth, async (req, res) => {
             category,
             price,
             location,
+            whatsapp,
             images: images || [],
             user: req.user._id,
             status: 'pending' // Needs admin approval
