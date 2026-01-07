@@ -301,6 +301,133 @@ function setupEventListeners() {
             alert('خطأ في الاتصال بالسيرفر');
         }
     });
+
+    // Footer My Ads link
+    document.getElementById('footerMyAds')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!token) {
+            alert('يجب تسجيل الدخول أولاً');
+            openModal('loginModal');
+        } else {
+            openModal('myAdsModal');
+            loadMyAds();
+        }
+    });
+
+    // Footer Post Ad link
+    document.getElementById('footerPostAd')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!token) {
+            alert('يجب تسجيل الدخول أولاً');
+            openModal('loginModal');
+        } else {
+            openModal('postAdModal');
+        }
+    });
+
+    // Edit Ad Form
+    document.getElementById('editAdForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const adId = document.getElementById('editAdId').value;
+        const adData = {
+            title: document.getElementById('editAdTitle').value,
+            category: document.getElementById('editAdCategory').value,
+            price: document.getElementById('editAdPrice').value,
+            location: document.getElementById('editAdLocation').value,
+            description: document.getElementById('editAdDescription').value
+        };
+        try {
+            const res = await fetch(`${API}/api/ads/${adId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(adData)
+            });
+            const data = await res.json();
+            if (data.ad) {
+                alert('✅ ' + data.message);
+                closeModal('editAdModal');
+                loadMyAds();
+            } else {
+                alert(data.message || 'خطأ في تعديل الإعلان');
+            }
+        } catch (e) {
+            alert('خطأ في الاتصال بالسيرفر');
+        }
+    });
+}
+
+// ===== Load My Ads =====
+async function loadMyAds() {
+    const container = document.getElementById('myAdsContainer');
+    container.innerHTML = '<div class="loading-state">🔄 جاري التحميل...</div>';
+    try {
+        const res = await fetch(`${API}/api/ads/my-ads`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.ads && data.ads.length > 0) {
+            renderMyAds(data.ads);
+        } else {
+            container.innerHTML = '<div class="empty-state">📭 لا توجد لديك إعلانات<br><br><button class="btn btn-primary" onclick="closeModal(\'myAdsModal\'); openModal(\'postAdModal\');">+ أضف إعلانك الأول</button></div>';
+        }
+    } catch (e) {
+        container.innerHTML = '<div class="empty-state">⚠️ تعذر تحميل الإعلانات</div>';
+    }
+}
+
+function renderMyAds(ads) {
+    const statusLabels = { pending: '⏳ بانتظار الموافقة', approved: '✅ موافق عليه', rejected: '❌ مرفوض' };
+    const statusColors = { pending: '#f59e0b', approved: '#22c55e', rejected: '#ef4444' };
+    const categoryNames = { home: 'منتجات منزلية', cars: 'سيارات', realestate: 'عقارات', services: 'خدمات' };
+
+    document.getElementById('myAdsContainer').innerHTML = `
+        <div class="my-ads-list">
+            ${ads.map(ad => `
+                <div class="my-ad-card">
+                    <div class="my-ad-info">
+                        <h4>${ad.title}</h4>
+                        <p>${categoryNames[ad.category] || ad.category} • ${ad.price}</p>
+                        <span class="ad-status" style="color:${statusColors[ad.status]}">${statusLabels[ad.status]}</span>
+                    </div>
+                    <div class="my-ad-actions">
+                        <button class="btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location}', '${ad.description || ''}')">✏️ تعديل</button>
+                        <button class="btn-delete" onclick="deleteMyAd('${ad._id}')">🗑️ حذف</button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Open Edit Ad Modal
+function openEditAd(id, title, category, price, location, description) {
+    document.getElementById('editAdId').value = id;
+    document.getElementById('editAdTitle').value = title;
+    document.getElementById('editAdCategory').value = category;
+    document.getElementById('editAdPrice').value = price;
+    document.getElementById('editAdLocation').value = location;
+    document.getElementById('editAdDescription').value = description;
+    closeModal('myAdsModal');
+    openModal('editAdModal');
+}
+
+// Delete Ad
+async function deleteMyAd(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
+    try {
+        const res = await fetch(`${API}/api/ads/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        alert('✅ ' + data.message);
+        loadMyAds();
+    } catch (e) {
+        alert('خطأ في حذف الإعلان');
+    }
 }
 
 // ===== CSS for new elements =====
@@ -323,6 +450,18 @@ style.textContent = `
     .success-modal p { color: var(--text-muted); margin-bottom: 20px; }
     .whatsapp-btn { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.2rem; text-decoration: none; transition: all 0.3s; }
     .whatsapp-btn:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(37, 211, 102, 0.4); }
+    .my-ads-modal { max-width: 700px; max-height: 80vh; overflow-y: auto; }
+    .my-ads-list { display: flex; flex-direction: column; gap: 15px; }
+    .my-ad-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
+    .my-ad-info h4 { margin: 0 0 5px 0; font-size: 1.1rem; }
+    .my-ad-info p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+    .ad-status { display: inline-block; margin-top: 8px; font-size: 0.85rem; font-weight: 600; }
+    .my-ad-actions { display: flex; gap: 10px; }
+    .btn-edit, .btn-delete { padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.3s; }
+    .btn-edit { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
+    .btn-delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .btn-edit:hover, .btn-delete:hover { transform: scale(1.05); }
+    .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
 `;
 document.head.appendChild(style);
 

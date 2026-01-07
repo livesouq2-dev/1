@@ -76,6 +76,33 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
+// Update ad (owner only)
+router.put('/:id', auth, async (req, res) => {
+    try {
+        const ad = await Ad.findById(req.params.id);
+        if (!ad) {
+            return res.status(404).json({ message: 'الإعلان غير موجود' });
+        }
+        if (ad.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'غير مصرح لك بتعديل هذا الإعلان' });
+        }
+
+        const { title, description, category, price, location, images } = req.body;
+        ad.title = title || ad.title;
+        ad.description = description || ad.description;
+        ad.category = category || ad.category;
+        ad.price = price || ad.price;
+        ad.location = location || ad.location;
+        ad.images = images || ad.images;
+        ad.status = 'pending'; // Reset to pending after edit
+
+        await ad.save();
+        res.json({ message: 'تم تعديل الإعلان بنجاح! سيتم مراجعته مجدداً', ad });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Delete ad (owner or admin)
 router.delete('/:id', auth, async (req, res) => {
     try {

@@ -233,6 +233,11 @@
                     <h4>الفئات</h4><a href="#">منتجات منزلية</a><a href="#">سيارات</a><a href="#">عقارات</a>
                 </div>
                 <div class="footer-links">
+                    <h4>حسابي</h4>
+                    <a href="#" id="footerMyAds">📋 لوحة إعلاناتي</a>
+                    <a href="#" id="footerPostAd">➕ إضافة إعلان</a>
+                </div>
+                <div class="footer-links">
                     <h4>الدعم</h4><a href="#">مركز المساعدة</a><a href="#">الشروط</a><a href="#">اتصل بنا</a>
                 </div>
             </div>
@@ -325,6 +330,42 @@
             </a>
             <button class="btn btn-outline" onclick="closeModal('successModal')"
                 style="margin-top: 15px;">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- My Ads Modal -->
+    <div class="modal" id="myAdsModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content my-ads-modal">
+            <button class="modal-close" onclick="closeModal('myAdsModal')">✕</button>
+            <h2>📋 لوحة إعلاناتي</h2>
+            <div id="myAdsContainer">
+                <div class="loading-state">🔄 جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Ad Modal -->
+    <div class="modal" id="editAdModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('editAdModal')">✕</button>
+            <h2>✏️ تعديل الإعلان</h2>
+            <form id="editAdForm">
+                <input type="hidden" id="editAdId">
+                <div class="form-group"><label>عنوان الإعلان</label><input type="text" id="editAdTitle" required></div>
+                <div class="form-group"><label>الفئة</label><select id="editAdCategory" required>
+                        <option value="home">منتجات منزلية</option>
+                        <option value="cars">سيارات</option>
+                        <option value="realestate">عقارات</option>
+                        <option value="services">خدمات</option>
+                    </select></div>
+                <div class="form-group"><label>السعر</label><input type="text" id="editAdPrice" required></div>
+                <div class="form-group"><label>الموقع</label><input type="text" id="editAdLocation" required></div>
+                <div class="form-group"><label>الوصف</label><textarea id="editAdDescription" rows="3"
+                        required></textarea></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">حفظ التعديلات</button>
+            </form>
         </div>
     </div>
 
