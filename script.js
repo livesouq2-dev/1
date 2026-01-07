@@ -462,7 +462,38 @@ style.textContent = `
     .btn-delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .btn-edit:hover, .btn-delete:hover { transform: scale(1.05); }
     .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    
+    /* Bottom Navigation Bar */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 15px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }
+    .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; background: none; border: none; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: 0.3s; font-family: inherit; }
+    .bottom-nav-item:hover, .bottom-nav-item.active { color: var(--primary); }
+    .bottom-nav-icon { font-size: 1.4rem; }
+    .bottom-nav-label { font-size: 0.7rem; font-weight: 600; }
+    .bottom-nav-add { background: var(--gradient); color: white !important; border-radius: 12px; margin-top: -20px; padding: 12px 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+    .bottom-nav-add:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
+    body { padding-bottom: 80px; }
+    @media (min-width: 769px) { .bottom-nav { display: none; } body { padding-bottom: 0; } }
 `;
 document.head.appendChild(style);
+
+// Bottom Navigation Event Listeners
+document.getElementById('bottomAddBtn')?.addEventListener('click', () => {
+    if (!token) {
+        alert('يجب تسجيل الدخول أولاً');
+        openModal('loginModal');
+    } else {
+        openModal('postAdModal');
+    }
+});
+
+document.getElementById('bottomMyAdsBtn')?.addEventListener('click', () => {
+    if (!token) {
+        alert('يجب تسجيل الدخول أولاً');
+        openModal('loginModal');
+    } else {
+        openModal('myAdsModal');
+        loadMyAds();
+    }
+});
 
 console.log('%c🛒 بدّل وبيع', 'font-size: 24px; font-weight: bold; color: #6366f1;');
