@@ -534,6 +534,10 @@ style.textContent = `
     .listing-whatsapp { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px 15px; margin-top: 12px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border-radius: 10px; font-size: 0.95rem; font-weight: 700; color: white; text-decoration: none; transition: 0.3s; }
     .listing-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4); }
     
+    /* Contact Link */
+    .contact-link { color: #25D366 !important; font-weight: 700; }
+    .contact-link:hover { color: #128C7E !important; }
+    
     /* Bottom Navigation Bar */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 15px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }
     .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; background: none; border: none; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: 0.3s; font-family: inherit; }
