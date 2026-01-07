@@ -6,6 +6,33 @@ const ADMIN_PHONE = '+961 71 163 211';
 let token = localStorage.getItem('token');
 let currentUser = null;
 
+// ===== Helper: File to Base64 =====
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// ===== Image Preview =====
+document.addEventListener('DOMContentLoaded', () => {
+    const imageInput = document.getElementById('adImage');
+    if (imageInput) {
+        imageInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const preview = document.getElementById('imagePreview');
+                const previewImg = document.getElementById('previewImg');
+                const base64 = await fileToBase64(file);
+                previewImg.src = base64;
+                preview.style.display = 'block';
+            }
+        });
+    }
+});
+
 // ===== DOM Elements =====
 const header = document.getElementById('header');
 const mobileMenu = document.getElementById('mobileMenu');
@@ -276,13 +303,21 @@ function setupEventListeners() {
     // Post ad form
     document.getElementById('adForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // Get image as base64 if file selected
+        let imageBase64 = '';
+        const imageFile = document.getElementById('adImage').files[0];
+        if (imageFile) {
+            imageBase64 = await fileToBase64(imageFile);
+        }
+
         const adData = {
             title: document.getElementById('adTitle').value,
             category: document.getElementById('adCategory').value,
             price: document.getElementById('adPrice').value,
             location: document.getElementById('adLocation').value,
             whatsapp: document.getElementById('adWhatsapp').value,
-            images: document.getElementById('adImage').value ? [document.getElementById('adImage').value] : [],
+            images: imageBase64 ? [imageBase64] : [],
             description: document.getElementById('adDescription').value
         };
         try {
