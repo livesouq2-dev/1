@@ -599,8 +599,8 @@ style.textContent = `
         .listing-card p { font-size: 0.8rem !important; }
         .listing-card .price { font-size: 1.1rem !important; }
         .listing-card .cat { font-size: 0.7rem !important; }
-        .stat-number { font-size: 1.5rem !important; }
-        .stat-label { font-size: 0.7rem !important; }
+        .stat-number { font-size: 2.2rem !important; }
+        .stat-label { font-size: 0.9rem !important; }
         .footer-links h4 { font-size: 0.95rem !important; }
         .footer-links a { font-size: 0.85rem !important; }
         .logo { font-size: 1.3rem !important; }
