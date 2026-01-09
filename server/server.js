@@ -11,9 +11,83 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// ===== SECURITY MIDDLEWARE =====
+
+// 1. Rate Limiting - Prevent brute force attacks
+const rateLimit = {};
+const rateLimitMiddleware = (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    const windowMs = 15 * 60 * 1000; // 15 minutes
+    const maxRequests = 100; // max 100 requests per 15 min
+
+    if (!rateLimit[ip]) {
+        rateLimit[ip] = { count: 1, startTime: now };
+    } else if (now - rateLimit[ip].startTime > windowMs) {
+        rateLimit[ip] = { count: 1, startTime: now };
+    } else {
+        rateLimit[ip].count++;
+        if (rateLimit[ip].count > maxRequests) {
+            return res.status(429).json({ message: 'كثرة الطلبات، حاول لاحقاً' });
+        }
+    }
+    next();
+};
+
+// 2. Security Headers
+const securityHeaders = (req, res, next) => {
+    // Prevent clickjacking
+    res.setHeader('X-Frame-Options', 'DENY');
+    // Prevent XSS attacks
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    // Prevent MIME sniffing
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    // Referrer policy
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    // Content Security Policy
+    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https:;");
+    // Remove server info
+    res.removeHeader('X-Powered-By');
+    next();
+};
+
+// 3. Input Sanitization
+const sanitizeInput = (req, res, next) => {
+    const sanitize = (obj) => {
+        for (let key in obj) {
+            if (typeof obj[key] === 'string') {
+                // Remove potential XSS scripts
+                obj[key] = obj[key].replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+                // Remove MongoDB injection attempts
+                obj[key] = obj[key].replace(/\$|\{|\}/g, '');
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                sanitize(obj[key]);
+            }
+        }
+    };
+    if (req.body) sanitize(req.body);
+    if (req.query) sanitize(req.query);
+    if (req.params) sanitize(req.params);
+    next();
+};
+
+// Apply Security Middleware
+app.use(rateLimitMiddleware);
+app.use(securityHeaders);
+
+// CORS Configuration (Secure)
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+        ? ['https://badel-w-bi3.onrender.com', 'https://w-bi3.onrender.com']
+        : '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
+
+// Body Parser with size limit (prevent large payload attacks)
+app.use(express.json({ limit: '5mb' }));
+app.use(sanitizeInput);
 app.use(express.static(path.join(__dirname, '..')));
 
 // API Routes
