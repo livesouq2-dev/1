@@ -581,6 +581,31 @@ style.textContent = `
         .commission-notice p { font-size: 0.85rem; margin: 3px 0; }
         .phone-link, .whatsapp-link { padding: 8px 16px; font-size: 0.95rem; }
         .btn { padding: 10px 20px; font-size: 0.95rem; }
+        
+        /* Global Mobile Font Size Reduction (20-25% smaller) */
+        html { font-size: 13px; }
+        h1 { font-size: 1.8rem !important; }
+        h2 { font-size: 1.4rem !important; }
+        h3 { font-size: 1.1rem !important; }
+        h4 { font-size: 1rem !important; }
+        p, span, a, li { font-size: 0.9rem !important; }
+        .hero-title { font-size: 2rem !important; }
+        .hero-subtitle { font-size: 1rem !important; }
+        .section-badge { font-size: 0.75rem !important; padding: 6px 12px !important; }
+        .category-card h3 { font-size: 0.95rem !important; }
+        .category-card p { font-size: 0.75rem !important; }
+        .tab { font-size: 0.8rem !important; padding: 8px 14px !important; }
+        .listing-card h3 { font-size: 1rem !important; }
+        .listing-card p { font-size: 0.8rem !important; }
+        .listing-card .price { font-size: 1.1rem !important; }
+        .listing-card .cat { font-size: 0.7rem !important; }
+        .stat-number { font-size: 1.5rem !important; }
+        .stat-label { font-size: 0.7rem !important; }
+        .footer-links h4 { font-size: 0.95rem !important; }
+        .footer-links a { font-size: 0.85rem !important; }
+        .logo { font-size: 1.3rem !important; }
+        .nav-links a { font-size: 0.9rem !important; }
+        .listing-whatsapp { font-size: 0.85rem !important; padding: 8px 12px !important; }
     }
 `;
 document.head.appendChild(style);
