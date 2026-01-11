@@ -557,6 +557,10 @@ style.textContent = `
     .help-section h3, .terms-section h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--secondary); }
     .help-section p, .terms-section p { margin: 0; line-height: 1.8; color: var(--text-muted); }
     
+    /* Large Pricing */
+    .price-large span { font-size: 2.8rem !important; font-weight: 800; }
+    .price-large { font-size: 1.2rem !important; }
+    
     /* Bottom Navigation Bar */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 15px; background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); }
     .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; background: none; border: none; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: 0.3s; font-family: inherit; }
