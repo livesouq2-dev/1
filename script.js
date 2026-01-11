@@ -409,10 +409,16 @@ function setupEventListeners() {
         openModal('termsModal');
     });
 
-    // Profile Button
-    document.getElementById('profileBtn')?.addEventListener('click', () => {
-        openModal('profileModal');
-        loadProfile();
+    // Profile Button (Nav Menu)
+    document.getElementById('navProfileBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!token) {
+            alert('يجب تسجيل الدخول أولاً');
+            openModal('loginModal');
+        } else {
+            openModal('profileModal');
+            loadProfile();
+        }
     });
 
     // Edit Ad Form
@@ -683,6 +689,10 @@ style.textContent = `
     /* Contact Link */
     .contact-link { color: #25D366 !important; font-weight: 700; }
     .contact-link:hover { color: #128C7E !important; }
+    
+    /* Profile Link in Nav */
+    .profile-link { color: var(--primary) !important; font-weight: 700; background: rgba(99, 102, 241, 0.1); padding: 8px 15px; border-radius: 8px; transition: all 0.3s; }
+    .profile-link:hover { background: rgba(99, 102, 241, 0.2); }
     
     /* Page Modals (Help, Terms) */
     .page-modal { max-height: 85vh; overflow-y: auto; }
