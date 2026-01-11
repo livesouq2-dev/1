@@ -160,11 +160,17 @@ function renderAds(ads) {
         services: 'خدمات'
     };
 
+    // Get favorites from localStorage
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+
     listingsGrid.innerHTML = ads.map(ad => `
-        <article class="listing-card" data-category="${ad.category}">
+        <article class="listing-card" data-category="${ad.category}" data-id="${ad._id}">
             <div class="listing-img">
-                <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/400x250?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}">
+                <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/400x250?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}" loading="lazy">
                 ${ad.isFeatured ? '<span class="badge gold">مميز</span>' : '<span class="badge">جديد</span>'}
+                <button class="fav-btn ${favorites.includes(ad._id) ? 'active' : ''}" onclick="toggleFavorite('${ad._id}', this)" title="إضافة للمفضلة">
+                    ${favorites.includes(ad._id) ? '❤️' : '🤍'}
+                </button>
             </div>
             <div class="listing-info">
                 <span class="cat">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
@@ -508,9 +514,74 @@ async function deleteMyAd(id) {
     }
 }
 
+// ===== FAVORITES FEATURE =====
+function toggleFavorite(adId, btn) {
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+
+    if (favorites.includes(adId)) {
+        favorites = favorites.filter(id => id !== adId);
+        btn.innerHTML = '🤍';
+        btn.classList.remove('active');
+    } else {
+        favorites.push(adId);
+        btn.innerHTML = '❤️';
+        btn.classList.add('active');
+        // Add pulse animation
+        btn.style.animation = 'pulse 0.3s ease';
+        setTimeout(() => btn.style.animation = '', 300);
+    }
+
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
 // ===== CSS for new elements =====
 const style = document.createElement('style');
 style.textContent = `
+    /* ===== SMOOTH ANIMATIONS ===== */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    
+    /* Apply animations to elements */
+    .hero-content { animation: fadeInUp 0.8s ease-out; }
+    .category-card { animation: fadeInUp 0.6s ease-out backwards; }
+    .category-card:nth-child(1) { animation-delay: 0.1s; }
+    .category-card:nth-child(2) { animation-delay: 0.2s; }
+    .category-card:nth-child(3) { animation-delay: 0.3s; }
+    .category-card:nth-child(4) { animation-delay: 0.4s; }
+    .listing-card { animation: fadeInUp 0.5s ease-out backwards; }
+    .pricing-card { animation: fadeInUp 0.6s ease-out backwards; }
+    .pricing-card:nth-child(1) { animation-delay: 0.1s; }
+    .pricing-card:nth-child(2) { animation-delay: 0.2s; }
+    
+    /* Smooth hover effects */
+    .listing-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .listing-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2); }
+    .category-card { transition: all 0.3s ease; }
+    .category-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+    .btn { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .btn:hover { transform: translateY(-3px); }
+    .btn:active { transform: translateY(-1px); }
+    .tab { transition: all 0.3s ease; }
+    .tab:hover { transform: translateY(-2px); }
+    
+    /* Loading shimmer effect */
+    .loading-shimmer { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    
+    /* Smooth scroll behavior */
+    html { scroll-behavior: smooth; }
+    
+    /* Focus states for accessibility */
+    .btn:focus, .tab:focus, input:focus, textarea:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+    
+    /* Favorites Button */
+    .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px); z-index: 10; }
+    .fav-btn:hover { background: rgba(0,0,0,0.7); transform: scale(1.1); }
+    .fav-btn.active { background: rgba(239, 68, 68, 0.8); }
+    .listing-img { position: relative; }
+    
     .hidden { display: none !important; }
     .user-menu { display: flex; align-items: center; gap: 15px; }
     .user-menu span { color: var(--secondary); font-weight: 600; }
