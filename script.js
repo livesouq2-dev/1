@@ -645,11 +645,12 @@ style.textContent = `
     .profile-field { margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; }
     .profile-field label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
     .profile-field p { margin: 0; font-size: 1rem; color: var(--text); font-weight: 600; }
-    .profile-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 25px; }
+    .profile-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 25px; padding: 20px; background: rgba(99, 102, 241, 0.1); border-radius: 15px; }
     .profile-stat { text-align: center; }
-    .profile-stat .stat-value { display: block; font-size: 2rem; font-weight: 800; color: var(--primary); }
-    .profile-stat .stat-name { font-size: 0.85rem; color: var(--text-muted); }
+    .profile-stat .stat-value { display: block; font-size: 2.5rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .profile-stat .stat-name { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
     .profile-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); border-radius: 15px; }
     .commission-notice { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center; }
     .commission-notice p { margin: 5px 0; }
     .phone-link { display: inline-block; margin-top: 10px; padding: 10px 20px; background: var(--gradient-gold); color: var(--dark); border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
@@ -837,5 +838,16 @@ function removeFavorite(adId) {
         btn.classList.remove('active');
     }
 }
+
+// Bottom Profile Button Handler
+document.getElementById('bottomProfileBtn')?.addEventListener('click', () => {
+    if (!token) {
+        alert('يجب تسجيل الدخول أولاً');
+        openModal('loginModal');
+    } else {
+        openModal('profileModal');
+        loadProfile();
+    }
+});
 
 console.log('%c🛒 بدّل وبيع', 'font-size: 24px; font-weight: bold; color: #6366f1;');
