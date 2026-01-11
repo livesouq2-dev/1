@@ -34,6 +34,7 @@
                 </div>
                 <div class="nav-actions user-menu hidden" id="userMenu">
                     <span id="userName"></span>
+                    <button class="btn btn-outline" id="profileBtn">👤 حسابي</button>
                     <button class="btn btn-outline" id="logoutBtn">خروج</button>
                 </div>
                 <button class="mobile-menu" id="mobileMenu">☰</button>
@@ -418,6 +419,49 @@
             <h2>❤️ المفضلة</h2>
             <div id="favoritesContainer" class="favorites-list">
                 <div class="loading-state">جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content page-modal">
+            <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+            <h2>👤 الملف الشخصي</h2>
+            <div class="profile-content">
+                <div class="profile-avatar">
+                    <div class="avatar-circle" id="profileAvatar">👤</div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-field">
+                        <label>الاسم</label>
+                        <p id="profileName">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>البريد الإلكتروني</label>
+                        <p id="profileEmail">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>تاريخ التسجيل</label>
+                        <p id="profileDate">-</p>
+                    </div>
+                </div>
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span class="stat-value" id="profileAdsCount">0</span>
+                        <span class="stat-name">إعلاناتي</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-value" id="profileFavsCount">0</span>
+                        <span class="stat-name">المفضلة</span>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <a href="https://wa.me/96171163211?text=مرحباً، أريد المساعدة في حسابي" target="_blank"
+                        class="btn btn-primary">💬 تواصل للدعم</a>
+                    <button class="btn btn-outline" onclick="closeModal('profileModal')">إغلاق</button>
+                </div>
             </div>
         </div>
     </div>

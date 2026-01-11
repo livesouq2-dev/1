@@ -409,6 +409,12 @@ function setupEventListeners() {
         openModal('termsModal');
     });
 
+    // Profile Button
+    document.getElementById('profileBtn')?.addEventListener('click', () => {
+        openModal('profileModal');
+        loadProfile();
+    });
+
     // Edit Ad Form
     document.getElementById('editAdForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -534,6 +540,35 @@ function toggleFavorite(adId, btn) {
     localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
+// ===== LOAD PROFILE =====
+async function loadProfile() {
+    // Get user info from localStorage
+    const userName = localStorage.getItem('userName') || 'مستخدم';
+    const userEmail = localStorage.getItem('userEmail') || '-';
+    const joinDate = localStorage.getItem('userJoinDate') || new Date().toLocaleDateString('ar-EG');
+
+    // Set profile info
+    document.getElementById('profileName').textContent = userName;
+    document.getElementById('profileEmail').textContent = userEmail;
+    document.getElementById('profileDate').textContent = joinDate;
+    document.getElementById('profileAvatar').textContent = userName.charAt(0).toUpperCase() || '👤';
+
+    // Get favorites count
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    document.getElementById('profileFavsCount').textContent = favorites.length;
+
+    // Get ads count
+    try {
+        const res = await fetch(`${API}/api/ads/my`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        document.getElementById('profileAdsCount').textContent = data.ads?.length || 0;
+    } catch (e) {
+        document.getElementById('profileAdsCount').textContent = '0';
+    }
+}
+
 // ===== CSS for new elements =====
 const style = document.createElement('style');
 style.textContent = `
@@ -601,6 +636,20 @@ style.textContent = `
     .fav-actions { display: flex; flex-direction: column; gap: 8px; }
     .btn-sm { padding: 6px 12px !important; font-size: 0.8rem !important; }
     .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    
+    /* Profile Modal */
+    .profile-content { text-align: center; }
+    .profile-avatar { margin-bottom: 20px; }
+    .avatar-circle { width: 80px; height: 80px; background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto; color: white; font-weight: 700; }
+    .profile-info { margin-bottom: 25px; }
+    .profile-field { margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .profile-field label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+    .profile-field p { margin: 0; font-size: 1rem; color: var(--text); font-weight: 600; }
+    .profile-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 25px; }
+    .profile-stat { text-align: center; }
+    .profile-stat .stat-value { display: block; font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .profile-stat .stat-name { font-size: 0.85rem; color: var(--text-muted); }
+    .profile-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .commission-notice { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center; }
     .commission-notice p { margin: 5px 0; }
     .phone-link { display: inline-block; margin-top: 10px; padding: 10px 20px; background: var(--gradient-gold); color: var(--dark); border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
