@@ -703,6 +703,8 @@ style.textContent = `
     .bottom-nav-label { font-size: 0.7rem; font-weight: 600; }
     .bottom-nav-add { background: var(--gradient); color: white !important; border-radius: 12px; margin-top: -20px; padding: 12px 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
     .bottom-nav-add:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
+    .bottom-nav-profile { color: var(--primary) !important; }
+    .bottom-nav-profile .bottom-nav-icon { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.6rem; }
     body { padding-bottom: 80px; }
     @media (min-width: 769px) { .bottom-nav { display: none; } body { padding-bottom: 0; } }
     
