@@ -588,6 +588,19 @@ style.textContent = `
     .modal-switch { text-align: center; margin-top: 20px; color: var(--text-muted); }
     .modal-switch a { color: var(--primary); }
     .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    
+    /* Favorites List */
+    .favorites-list { max-height: 60vh; overflow-y: auto; }
+    .fav-card { display: flex; align-items: center; gap: 15px; padding: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; transition: all 0.3s ease; }
+    .fav-card:hover { background: rgba(255,255,255,0.1); transform: translateX(-5px); }
+    .fav-card img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; }
+    .fav-info { flex: 1; }
+    .fav-info h4 { margin: 0 0 5px 0; font-size: 1rem; }
+    .fav-info p { margin: 0 0 5px 0; font-size: 0.85rem; color: var(--text-muted); }
+    .fav-price { color: var(--secondary); font-weight: 700; font-size: 1.1rem; }
+    .fav-actions { display: flex; flex-direction: column; gap: 8px; }
+    .btn-sm { padding: 6px 12px !important; font-size: 0.8rem !important; }
+    .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
     .commission-notice { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center; }
     .commission-notice p { margin: 5px 0; }
     .phone-link { display: inline-block; margin-top: 10px; padding: 10px 20px; background: var(--gradient-gold); color: var(--dark); border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
@@ -705,5 +718,75 @@ document.getElementById('bottomMyAdsBtn')?.addEventListener('click', () => {
         loadMyAds();
     }
 });
+
+// Favorites Button Handler
+document.getElementById('bottomFavBtn')?.addEventListener('click', () => {
+    openModal('favoritesModal');
+    loadFavorites();
+});
+
+// ===== LOAD FAVORITES =====
+async function loadFavorites() {
+    const container = document.getElementById('favoritesContainer');
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+
+    if (favorites.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p>🤍 لا توجد إعلانات في المفضلة</p>
+                <p>اضغط على ❤️ في أي إعلان لإضافته هنا</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = '<div class="loading-state">جاري التحميل...</div>';
+
+    try {
+        const res = await fetch(`${API}/api/ads`);
+        const data = await res.json();
+        const favoriteAds = data.ads.filter(ad => favorites.includes(ad._id));
+
+        if (favoriteAds.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>🤍 لا توجد إعلانات في المفضلة</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = favoriteAds.map(ad => `
+            <div class="fav-card">
+                <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/100x100?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}">
+                <div class="fav-info">
+                    <h4>${ad.title}</h4>
+                    <p>📍 ${ad.location}</p>
+                    <span class="fav-price">${ad.price}</span>
+                </div>
+                <div class="fav-actions">
+                    ${ad.whatsapp ? `<a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="btn btn-primary btn-sm">💬 تواصل</a>` : ''}
+                    <button class="btn btn-outline btn-sm" onclick="removeFavorite('${ad._id}')">🗑️ إزالة</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = '<div class="empty-state">حدث خطأ في التحميل</div>';
+    }
+}
+
+// Remove from favorites
+function removeFavorite(adId) {
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    favorites = favorites.filter(id => id !== adId);
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    loadFavorites();
+    // Update the heart button if visible
+    const btn = document.querySelector(`.listing-card[data-id="${adId}"] .fav-btn`);
+    if (btn) {
+        btn.innerHTML = '🤍';
+        btn.classList.remove('active');
+    }
+}
 
 console.log('%c🛒 بدّل وبيع', 'font-size: 24px; font-weight: bold; color: #6366f1;');

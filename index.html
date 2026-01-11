@@ -400,11 +400,27 @@
             <span class="bottom-nav-icon">📋</span>
             <span class="bottom-nav-label">إعلاناتي</span>
         </button>
+        <button class="bottom-nav-item" id="bottomFavBtn">
+            <span class="bottom-nav-icon">❤️</span>
+            <span class="bottom-nav-label">المفضلة</span>
+        </button>
         <a href="#listings" class="bottom-nav-item">
             <span class="bottom-nav-icon">🔍</span>
             <span class="bottom-nav-label">البحث</span>
         </a>
     </nav>
+
+    <!-- Favorites Modal -->
+    <div class="modal" id="favoritesModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content page-modal">
+            <button class="modal-close" onclick="closeModal('favoritesModal')">✕</button>
+            <h2>❤️ المفضلة</h2>
+            <div id="favoritesContainer" class="favorites-list">
+                <div class="loading-state">جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
 
     <!-- Help Center Modal -->
     <div class="modal" id="helpModal">
