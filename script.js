@@ -290,6 +290,9 @@ function setupEventListeners() {
             if (data.token) {
                 token = data.token;
                 localStorage.setItem('token', token);
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userJoinDate', data.user.createdAt ? new Date(data.user.createdAt).toLocaleDateString('ar-EG') : new Date().toLocaleDateString('ar-EG'));
                 currentUser = data.user;
                 showLoggedIn();
                 closeModal('loginModal');
@@ -319,6 +322,9 @@ function setupEventListeners() {
             if (data.token) {
                 token = data.token;
                 localStorage.setItem('token', token);
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userName', name);
+                localStorage.setItem('userJoinDate', new Date().toLocaleDateString('ar-EG'));
                 currentUser = data.user;
                 showLoggedIn();
                 closeModal('registerModal');
