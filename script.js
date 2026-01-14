@@ -218,7 +218,8 @@ function renderAds(ads) {
             <div class="listing-info">
                 <span class="cat">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
                 <h3>${ad.title}</h3>
-                <p>📍 ${ad.location}</p>
+                <p class="listing-location">📍 ${ad.location}</p>
+                <p class="listing-description">${ad.description || ''}</p>
                 <div class="listing-footer">
                     <div class="price">${ad.price}</div>
                 </div>
