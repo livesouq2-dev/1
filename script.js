@@ -6,6 +6,40 @@ const ADMIN_PHONE = '+961 71 163 211';
 let token = localStorage.getItem('token');
 let currentUser = null;
 
+// ===== Theme Management =====
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    const themeBtn = document.getElementById('themeToggle');
+    if (themeBtn) themeBtn.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+}
+
+// ===== Share Functions =====
+function shareWhatsApp(title, url) {
+    const text = encodeURIComponent(`شاهد هذا الإعلان: ${title}\n${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function shareFacebook(url) {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+}
+
+function shareTwitter(title, url) {
+    const text = encodeURIComponent(`${title}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
+}
+
+function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        alert('✅ تم نسخ الرابط!');
+    });
+}
+
 // ===== Helper: Compress and Convert Image to Base64 =====
 function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve, reject) => {
@@ -163,14 +197,23 @@ function renderAds(ads) {
     // Get favorites from localStorage
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
-    listingsGrid.innerHTML = ads.map(ad => `
-        <article class="listing-card" data-category="${ad.category}" data-id="${ad._id}">
+    listingsGrid.innerHTML = ads.map((ad, index) => `
+        <article class="listing-card animate-fadeInUp" data-category="${ad.category}" data-id="${ad._id}" style="animation-delay: ${index * 0.1}s">
             <div class="listing-img">
                 <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/400x250?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}" loading="lazy">
-                ${ad.isFeatured ? '<span class="badge gold">مميز</span>' : '<span class="badge">جديد</span>'}
+                ${ad.isFeatured ? '<span class="badge gold animate-pulse">⭐ مميز</span>' : '<span class="badge">✨ جديد</span>'}
                 <button class="fav-btn ${favorites.includes(ad._id) ? 'active' : ''}" onclick="toggleFavorite('${ad._id}', this)" title="إضافة للمفضلة">
                     ${favorites.includes(ad._id) ? '❤️' : '🤍'}
                 </button>
+                <div class="share-dropdown">
+                    <button class="share-btn" onclick="this.parentElement.classList.toggle('active')" title="مشاركة">📤</button>
+                    <div class="share-menu">
+                        <button onclick="shareWhatsApp('${ad.title}', window.location.href)">💬 واتساب</button>
+                        <button onclick="shareFacebook(window.location.href)">📘 فيسبوك</button>
+                        <button onclick="shareTwitter('${ad.title}', window.location.href)">🐦 تويتر</button>
+                        <button onclick="copyLink(window.location.href)">📋 نسخ الرابط</button>
+                    </div>
+                </div>
             </div>
             <div class="listing-info">
                 <span class="cat">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
@@ -234,6 +277,12 @@ function setupEventListeners() {
 
     // Logout
     logoutBtn?.addEventListener('click', logout);
+
+    // Theme Toggle
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+    // Set initial theme icon
+    const themeBtn = document.getElementById('themeToggle');
+    if (themeBtn) themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
 
     // Post ad buttons
     postAdBtn?.addEventListener('click', () => {

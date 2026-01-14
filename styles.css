@@ -13,10 +13,177 @@
     --glass-border: rgba(255, 255, 255, 0.12);
     --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
     --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
     --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
     --radius: 16px;
     --radius-sm: 8px;
+    --radius-lg: 24px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light Mode */
+[data-theme="light"] {
+    --dark: #f8fafc;
+    --dark-lighter: #e2e8f0;
+    --dark-card: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --glass: rgba(0, 0, 0, 0.05);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fadeInDown {
+    animation: fadeInDown 0.6s ease-out forwards;
+}
+
+.animate-fadeInLeft {
+    animation: fadeInLeft 0.6s ease-out forwards;
+}
+
+.animate-fadeInRight {
+    animation: fadeInRight 0.6s ease-out forwards;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.5s ease-out forwards;
+}
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+    animation: glow 2s ease-in-out infinite;
 }
 
 /* ===== Reset & Base ===== */
@@ -110,6 +277,27 @@ textarea {
 .btn-lg {
     padding: 16px 32px;
     font-size: 1.1rem;
+}
+
+/* ===== Theme Toggle ===== */
+.theme-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-left: 10px;
+}
+
+.theme-toggle:hover {
+    background: var(--primary);
+    transform: rotate(30deg) scale(1.1);
 }
 
 /* ===== Header ===== */
@@ -469,6 +657,76 @@ section {
 .listing-img .badge.gold {
     background: var(--gradient-gold);
     color: var(--dark);
+}
+
+/* Share Dropdown */
+.share-dropdown {
+    position: absolute;
+    top: 12px;
+    left: 50px;
+}
+
+.share-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-btn:hover {
+    background: var(--primary);
+    transform: scale(1.1);
+}
+
+.share-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--dark-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    min-width: 140px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    z-index: 100;
+    box-shadow: var(--shadow);
+}
+
+.share-dropdown.active .share-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(5px);
+}
+
+.share-menu button {
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 0.85rem;
+    text-align: right;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-menu button:hover {
+    background: var(--glass);
 }
 
 .listing-info {
