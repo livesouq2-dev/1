@@ -659,6 +659,26 @@ section {
     color: var(--dark);
 }
 
+/* Click Hint Overlay */
+.click-hint {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: 30px 15px 15px;
+    font-size: 0.85rem;
+    text-align: center;
+    opacity: 0;
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.listing-img:hover .click-hint {
+    opacity: 1;
+}
+
 /* Share Dropdown */
 .share-dropdown {
     position: absolute;

@@ -328,6 +328,7 @@ function renderAds(ads) {
         <article class="listing-card animate-fadeInUp" data-category="${ad.category}" data-id="${ad._id}" style="animation-delay: ${index * 0.1}s">
             <div class="listing-img" onclick="showAdDetail('${ad._id}')" style="cursor: pointer;">
                 <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/400x250?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}" loading="lazy">
+                <span class="click-hint">👆 اضغط للتفاصيل</span>
                 ${ad.isFeatured ? '<span class="badge gold animate-pulse">⭐ مميز</span>' : '<span class="badge">✨ جديد</span>'}
                 <button class="fav-btn ${favorites.includes(ad._id) ? 'active' : ''}" onclick="toggleFavorite('${ad._id}', this)" title="إضافة للمفضلة">
                     ${favorites.includes(ad._id) ? '❤️' : '🤍'}
