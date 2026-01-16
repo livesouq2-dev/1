@@ -84,7 +84,7 @@ function showAdDetail(adId) {
     if (!ad) return;
 
     const categoryNames = {
-        home: 'منتجات منزلية',
+        home: 'المنتجات والأجهزة',
         cars: 'سيارات',
         realestate: 'عقارات',
         services: 'خدمات',
@@ -314,7 +314,7 @@ function renderAds(ads) {
         jobs: '💼'
     };
     const categoryNames = {
-        home: 'منتجات منزلية',
+        home: 'المنتجات والأجهزة',
         cars: 'سيارات',
         realestate: 'عقارات',
         services: 'خدمات',
@@ -669,7 +669,7 @@ async function loadMyAds() {
 function renderMyAds(ads) {
     const statusLabels = { pending: '⏳ بانتظار الموافقة', approved: '✅ موافق عليه', rejected: '❌ مرفوض' };
     const statusColors = { pending: '#f59e0b', approved: '#22c55e', rejected: '#ef4444' };
-    const categoryNames = { home: 'منتجات منزلية', cars: 'سيارات', realestate: 'عقارات', services: 'خدمات' };
+    const categoryNames = { home: 'المنتجات والأجهزة', cars: 'سيارات', realestate: 'عقارات', services: 'خدمات' };
 
     document.getElementById('myAdsContainer').innerHTML = `
         <div class="my-ads-list">
