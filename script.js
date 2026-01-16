@@ -526,15 +526,22 @@ function setupEventListeners() {
             imageBase64 = await compressImage(imageFile);
         }
 
+        const category = document.getElementById('adCategory').value;
         const adData = {
             title: document.getElementById('adTitle').value,
-            category: document.getElementById('adCategory').value,
+            category: category,
             price: document.getElementById('adPrice').value,
             location: document.getElementById('adLocation').value,
             whatsapp: document.getElementById('adWhatsapp').value,
             images: imageBase64 ? [imageBase64] : [],
             description: document.getElementById('adDescription').value
         };
+
+        // Add job-specific fields if category is jobs
+        if (category === 'jobs') {
+            adData.jobType = document.getElementById('jobType')?.value || null;
+            adData.jobExperience = document.getElementById('jobExperience')?.value || null;
+        }
         try {
             const res = await fetch(`${API}/api/ads`, {
                 method: 'POST',
