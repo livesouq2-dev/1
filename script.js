@@ -185,13 +185,15 @@ function renderAds(ads) {
         home: '🏠',
         cars: '🚗',
         realestate: '🏗️',
-        services: '🔧'
+        services: '🔧',
+        jobs: '💼'
     };
     const categoryNames = {
         home: 'منتجات منزلية',
         cars: 'سيارات',
         realestate: 'عقارات',
-        services: 'خدمات'
+        services: 'خدمات',
+        jobs: 'فرص العمل'
     };
 
     // Get favorites from localStorage
@@ -234,7 +236,7 @@ function renderAds(ads) {
 }
 
 function updateCategoryCounts(ads) {
-    const counts = { home: 0, cars: 0, realestate: 0, services: 0 };
+    const counts = { home: 0, cars: 0, realestate: 0, services: 0, jobs: 0 };
     ads.forEach(ad => {
         if (counts[ad.category] !== undefined) counts[ad.category]++;
     });
@@ -242,6 +244,7 @@ function updateCategoryCounts(ads) {
     document.getElementById('countCars').textContent = `${counts.cars} إعلان`;
     document.getElementById('countRealestate').textContent = `${counts.realestate} إعلان`;
     document.getElementById('countServices').textContent = `${counts.services} إعلان`;
+    document.getElementById('countJobs').textContent = `${counts.jobs} إعلان`;
 }
 
 // ===== Modal Functions =====
