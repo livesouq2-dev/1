@@ -52,9 +52,9 @@ router.get('/my-ads', auth, async (req, res) => {
 // Create ad (protected) - requires approval
 router.post('/', auth, async (req, res) => {
     try {
-        const { title, description, category, price, location, whatsapp, images } = req.body;
+        const { title, description, category, price, location, whatsapp, images, jobType, jobExperience } = req.body;
 
-        const ad = await Ad.create({
+        const adData = {
             title,
             description,
             category,
@@ -64,7 +64,15 @@ router.post('/', auth, async (req, res) => {
             images: images || [],
             user: req.user._id,
             status: 'pending' // Needs admin approval
-        });
+        };
+
+        // Add job-specific fields if category is jobs
+        if (category === 'jobs') {
+            adData.jobType = jobType || null;
+            adData.jobExperience = jobExperience || null;
+        }
+
+        const ad = await Ad.create(adData);
 
         res.status(201).json({
             status: 'success',
