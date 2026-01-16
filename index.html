@@ -309,9 +309,10 @@
                     class="phone-link whatsapp-link">💬 واتساب</a>
             </div>
             <form id="adForm">
-                <div class="form-group"><label>عنوان الإعلان</label><input type="text" id="adTitle"
+                <div class="form-group"><label id="titleLabel">عنوان الإعلان</label><input type="text" id="adTitle"
                         placeholder="مثال: سيارة BMW للبيع" required></div>
-                <div class="form-group"><label>الفئة</label><select id="adCategory" required>
+                <div class="form-group"><label>الفئة</label><select id="adCategory" required
+                        onchange="toggleJobFields()">
                         <option value="">اختر الفئة</option>
                         <option value="home">منتجات منزلية</option>
                         <option value="cars">سيارات</option>
@@ -319,8 +320,25 @@
                         <option value="services">خدمات</option>
                         <option value="jobs">💼 فرص العمل</option>
                     </select></div>
-                <div class="form-group"><label>السعر</label><input type="text" id="adPrice" placeholder="$0.00"
-                        required></div>
+
+                <!-- Job-specific fields (hidden by default) -->
+                <div id="jobFields" style="display: none;">
+                    <div class="form-group"><label>نوع الوظيفة</label><select id="jobType">
+                            <option value="full-time">دوام كامل</option>
+                            <option value="part-time">دوام جزئي</option>
+                            <option value="remote">عن بُعد</option>
+                            <option value="freelance">حر / مستقل</option>
+                        </select></div>
+                    <div class="form-group"><label>الخبرة المطلوبة</label><select id="jobExperience">
+                            <option value="entry">مبتدئ (0-1 سنة)</option>
+                            <option value="mid">متوسط (2-4 سنوات)</option>
+                            <option value="senior">خبير (5+ سنوات)</option>
+                            <option value="any">غير محدد</option>
+                        </select></div>
+                </div>
+
+                <div class="form-group"><label id="priceLabel">السعر</label><input type="text" id="adPrice"
+                        placeholder="$0.00" required></div>
                 <div class="form-group"><label>الموقع</label><input type="text" id="adLocation"
                         placeholder="مثال: بيروت، لبنان" required></div>
                 <div class="form-group"><label>📱 رقم الواتساب</label><input type="tel" id="adWhatsapp"
@@ -332,7 +350,7 @@
                         <img id="previewImg" style="max-width: 100%; max-height: 150px; border-radius: 8px;">
                     </div>
                 </div>
-                <div class="form-group"><label>الوصف</label><textarea id="adDescription" rows="2"
+                <div class="form-group"><label id="descLabel">الوصف</label><textarea id="adDescription" rows="2"
                         placeholder="أضف تفاصيل عن منتجك..." required></textarea></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">نشر الإعلان</button>
             </form>

@@ -40,6 +40,42 @@ function copyLink(url) {
     });
 }
 
+// ===== Toggle Job Fields =====
+function toggleJobFields() {
+    const category = document.getElementById('adCategory')?.value;
+    const jobFields = document.getElementById('jobFields');
+    const titleLabel = document.getElementById('titleLabel');
+    const priceLabel = document.getElementById('priceLabel');
+    const descLabel = document.getElementById('descLabel');
+    const adTitle = document.getElementById('adTitle');
+    const adPrice = document.getElementById('adPrice');
+    const adDescription = document.getElementById('adDescription');
+
+    if (category === 'jobs') {
+        // Show job fields
+        if (jobFields) jobFields.style.display = 'block';
+        // Update labels for job posting
+        if (titleLabel) titleLabel.textContent = '💼 المسمى الوظيفي';
+        if (priceLabel) priceLabel.textContent = '💰 الراتب';
+        if (descLabel) descLabel.textContent = '📋 المتطلبات والوصف';
+        // Update placeholders
+        if (adTitle) adTitle.placeholder = 'مثال: مطلوب مبرمج Full-Stack';
+        if (adPrice) adPrice.placeholder = 'مثال: $500-$1000 أو قابل للتفاوض';
+        if (adDescription) adDescription.placeholder = 'المهارات المطلوبة، المسؤوليات، مزايا العمل...';
+    } else {
+        // Hide job fields
+        if (jobFields) jobFields.style.display = 'none';
+        // Reset labels
+        if (titleLabel) titleLabel.textContent = 'عنوان الإعلان';
+        if (priceLabel) priceLabel.textContent = 'السعر';
+        if (descLabel) descLabel.textContent = 'الوصف';
+        // Reset placeholders
+        if (adTitle) adTitle.placeholder = 'مثال: سيارة BMW للبيع';
+        if (adPrice) adPrice.placeholder = '$0.00';
+        if (adDescription) adDescription.placeholder = 'أضف تفاصيل عن منتجك...';
+    }
+}
+
 // ===== Helper: Compress and Convert Image to Base64 =====
 function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve, reject) => {
