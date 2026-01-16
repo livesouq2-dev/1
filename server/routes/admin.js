@@ -127,10 +127,18 @@ router.patch('/ads/:id/reject', adminAuth, async (req, res) => {
 // Update/Edit ad (admin)
 router.put('/ads/:id', adminAuth, async (req, res) => {
     try {
-        const { title, description, category, price, location, whatsapp } = req.body;
+        const { title, description, category, price, location, whatsapp, jobType, jobExperience } = req.body;
+        const updateData = { title, description, category, price, location, whatsapp };
+
+        // Add job-specific fields if category is jobs
+        if (category === 'jobs') {
+            updateData.jobType = jobType || null;
+            updateData.jobExperience = jobExperience || null;
+        }
+
         const ad = await Ad.findByIdAndUpdate(
             req.params.id,
-            { title, description, category, price, location, whatsapp },
+            updateData,
             { new: true }
         );
         if (!ad) {
