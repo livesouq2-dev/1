@@ -413,12 +413,36 @@
                 </div>
                 <div class="form-group">
                     <label>الفئة</label>
-                    <select id="editCategory" required>
+                    <select id="editCategory" required onchange="toggleAdminJobFields()">
                         <option value="home">منتجات منزلية</option>
                         <option value="cars">سيارات</option>
                         <option value="realestate">عقارات</option>
                         <option value="services">خدمات</option>
+                        <option value="jobs">💼 فرص العمل</option>
                     </select>
+                </div>
+                <!-- Job-specific fields -->
+                <div id="adminJobFields" style="display: none;">
+                    <div class="form-group">
+                        <label>⏰ نوع الوظيفة</label>
+                        <select id="editJobType">
+                            <option value="">-- اختر --</option>
+                            <option value="full-time">دوام كامل</option>
+                            <option value="part-time">دوام جزئي</option>
+                            <option value="remote">عن بُعد</option>
+                            <option value="freelance">حر / مستقل</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📊 الخبرة المطلوبة</label>
+                        <select id="editJobExperience">
+                            <option value="">-- اختر --</option>
+                            <option value="entry">مبتدئ (0-1 سنة)</option>
+                            <option value="mid">متوسط (2-4 سنوات)</option>
+                            <option value="senior">خبير (5+ سنوات)</option>
+                            <option value="any">غير محدد</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>السعر</label>
@@ -537,7 +561,7 @@
                         <td style="direction:ltr">${ad.user?.phone || '-'}</td>
                         <td>${new Date(ad.createdAt).toLocaleDateString('ar')}</td>
                         <td>
-                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}')">✏️ تعديل</button>
+                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}')">✏️ تعديل</button>
                             <button class="action-btn btn-approve" onclick="approveAd('${ad._id}')">✓ قبول</button>
                             <button class="action-btn btn-reject" onclick="rejectAd('${ad._id}')">✗ رفض</button>
                         </td>
@@ -636,8 +660,19 @@
         }
 
         function getCategoryName(cat) {
-            const names = { home: '🏠 منزلية', cars: '🚗 سيارات', realestate: '🏗️ عقارات', services: '🔧 خدمات' };
+            const names = { home: '🏠 منزلية', cars: '🚗 سيارات', realestate: '🏗️ عقارات', services: '🔧 خدمات', jobs: '💼 وظائف' };
             return names[cat] || cat;
+        }
+
+        // Toggle admin job fields visibility
+        function toggleAdminJobFields() {
+            const category = document.getElementById('editCategory').value;
+            const jobFields = document.getElementById('adminJobFields');
+            if (category === 'jobs') {
+                jobFields.style.display = 'block';
+            } else {
+                jobFields.style.display = 'none';
+            }
         }
         function getStatusName(status) {
             const names = { pending: 'بانتظار', approved: 'موافق', rejected: 'مرفوض' };
@@ -645,7 +680,7 @@
         }
 
         // Edit Ad Functions
-        function openEditAd(id, title, category, price, location, whatsapp, description) {
+        function openEditAd(id, title, category, price, location, whatsapp, description, jobType, jobExperience) {
             document.getElementById('editAdId').value = id;
             document.getElementById('editTitle').value = title;
             document.getElementById('editCategory').value = category;
@@ -653,6 +688,9 @@
             document.getElementById('editLocation').value = location;
             document.getElementById('editWhatsapp').value = whatsapp;
             document.getElementById('editDescription').value = description;
+            document.getElementById('editJobType').value = jobType || '';
+            document.getElementById('editJobExperience').value = jobExperience || '';
+            toggleAdminJobFields();
             document.getElementById('editAdModal').classList.add('active');
         }
 
@@ -663,14 +701,20 @@
         document.getElementById('adminEditForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('editAdId').value;
+            const category = document.getElementById('editCategory').value;
             const data = {
                 title: document.getElementById('editTitle').value,
-                category: document.getElementById('editCategory').value,
+                category: category,
                 price: document.getElementById('editPrice').value,
                 location: document.getElementById('editLocation').value,
                 whatsapp: document.getElementById('editWhatsapp').value,
                 description: document.getElementById('editDescription').value
             };
+            // Add job-specific fields if category is jobs
+            if (category === 'jobs') {
+                data.jobType = document.getElementById('editJobType').value || null;
+                data.jobExperience = document.getElementById('editJobExperience').value || null;
+            }
             try {
                 const res = await fetch(`${API}/api/admin/ads/${id}`, {
                     method: 'PUT',
