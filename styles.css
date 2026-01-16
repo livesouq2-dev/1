@@ -670,13 +670,14 @@ section {
     padding: 30px 15px 15px;
     font-size: 0.85rem;
     text-align: center;
-    opacity: 0;
+    opacity: 0.85;
     transition: var(--transition);
     pointer-events: none;
 }
 
 .listing-img:hover .click-hint {
     opacity: 1;
+    background: linear-gradient(transparent, rgba(99, 102, 241, 0.9));
 }
 
 /* Share Dropdown */
