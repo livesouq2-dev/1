@@ -15,7 +15,7 @@ const adSchema = new mongoose.Schema({
     category: {
         type: String,
         required: [true, 'الفئة مطلوبة'],
-        enum: ['home', 'cars', 'realestate', 'services']
+        enum: ['home', 'cars', 'realestate', 'services', 'jobs']
     },
     price: {
         type: String,
