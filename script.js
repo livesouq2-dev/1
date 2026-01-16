@@ -76,6 +76,94 @@ function toggleJobFields() {
     }
 }
 
+// ===== Show Ad Detail Modal =====
+let allAdsData = []; // Store ads globally for detail view
+
+function showAdDetail(adId) {
+    const ad = allAdsData.find(a => a._id === adId);
+    if (!ad) return;
+
+    const categoryNames = {
+        home: 'منتجات منزلية',
+        cars: 'سيارات',
+        realestate: 'عقارات',
+        services: 'خدمات',
+        jobs: 'فرص العمل'
+    };
+
+    const categoryIcons = {
+        home: '🏠',
+        cars: '🚗',
+        realestate: '🏗️',
+        services: '🔧',
+        jobs: '💼'
+    };
+
+    const jobTypeNames = {
+        'full-time': 'دوام كامل',
+        'part-time': 'دوام جزئي',
+        'remote': 'عن بُعد',
+        'freelance': 'حر / مستقل'
+    };
+
+    const experienceNames = {
+        'entry': 'مبتدئ (0-1 سنة)',
+        'mid': 'متوسط (2-4 سنوات)',
+        'senior': 'خبير (5+ سنوات)',
+        'any': 'غير محدد'
+    };
+
+    let detailHTML = `
+        <div class="ad-detail">
+            ${ad.images && ad.images[0] ? `<img src="${ad.images[0]}" alt="${ad.title}" class="ad-detail-img">` : ''}
+            <div class="ad-detail-header">
+                <span class="ad-detail-category">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
+                ${ad.isFeatured ? '<span class="badge gold">⭐ مميز</span>' : ''}
+            </div>
+            <h2 class="ad-detail-title">${ad.title}</h2>
+            <div class="ad-detail-info">
+                <div class="ad-detail-row">
+                    <span>📍 الموقع:</span>
+                    <strong>${ad.location}</strong>
+                </div>
+                <div class="ad-detail-row">
+                    <span>${ad.category === 'jobs' ? '💰 الراتب:' : '💵 السعر:'}</span>
+                    <strong class="price-highlight">${ad.price}</strong>
+                </div>
+    `;
+
+    // Add job-specific fields
+    if (ad.category === 'jobs') {
+        detailHTML += `
+                <div class="ad-detail-row">
+                    <span>⏰ نوع الوظيفة:</span>
+                    <strong>${jobTypeNames[ad.jobType] || 'غير محدد'}</strong>
+                </div>
+                <div class="ad-detail-row">
+                    <span>📊 الخبرة المطلوبة:</span>
+                    <strong>${experienceNames[ad.jobExperience] || 'غير محدد'}</strong>
+                </div>
+        `;
+    }
+
+    detailHTML += `
+            </div>
+            <div class="ad-detail-description">
+                <h4>${ad.category === 'jobs' ? '📋 المتطلبات والوصف:' : '📝 الوصف:'}</h4>
+                <p>${ad.description || 'لا يوجد وصف'}</p>
+            </div>
+            ${ad.whatsapp ? `
+                <a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="btn btn-primary ad-detail-whatsapp">
+                    💬 تواصل عبر واتساب
+                </a>
+            ` : ''}
+        </div>
+    `;
+
+    document.getElementById('adDetailContent').innerHTML = detailHTML;
+    openModal('adDetailModal');
+}
+
 // ===== Helper: Compress and Convert Image to Base64 =====
 function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve, reject) => {
@@ -196,6 +284,7 @@ async function loadAds(category = 'all') {
         const data = await res.json();
 
         if (data.ads && data.ads.length > 0) {
+            allAdsData = data.ads; // Store for detail view
             renderAds(data.ads);
             updateCategoryCounts(data.ads);
         } else {
@@ -237,7 +326,7 @@ function renderAds(ads) {
 
     listingsGrid.innerHTML = ads.map((ad, index) => `
         <article class="listing-card animate-fadeInUp" data-category="${ad.category}" data-id="${ad._id}" style="animation-delay: ${index * 0.1}s">
-            <div class="listing-img">
+            <div class="listing-img" onclick="showAdDetail('${ad._id}')" style="cursor: pointer;">
                 <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/400x250?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}" loading="lazy">
                 ${ad.isFeatured ? '<span class="badge gold animate-pulse">⭐ مميز</span>' : '<span class="badge">✨ جديد</span>'}
                 <button class="fav-btn ${favorites.includes(ad._id) ? 'active' : ''}" onclick="toggleFavorite('${ad._id}', this)" title="إضافة للمفضلة">
