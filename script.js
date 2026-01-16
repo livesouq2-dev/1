@@ -132,24 +132,18 @@ function showAdDetail(adId) {
                 </div>
     `;
 
-    // Add job-specific fields only if they have values
-    if (ad.category === 'jobs' && (ad.jobType || ad.jobExperience)) {
-        if (ad.jobType) {
-            detailHTML += `
+    // Add job-specific fields for all job ads
+    if (ad.category === 'jobs') {
+        detailHTML += `
                 <div class="ad-detail-row">
                     <span>⏰ نوع الوظيفة:</span>
-                    <strong>${jobTypeNames[ad.jobType]}</strong>
+                    <strong>${jobTypeNames[ad.jobType] || 'لم تُحدد'}</strong>
                 </div>
-            `;
-        }
-        if (ad.jobExperience) {
-            detailHTML += `
                 <div class="ad-detail-row">
                     <span>📊 الخبرة المطلوبة:</span>
-                    <strong>${experienceNames[ad.jobExperience]}</strong>
+                    <strong>${experienceNames[ad.jobExperience] || 'لم تُحدد'}</strong>
                 </div>
-            `;
-        }
+        `;
     }
 
     detailHTML += `
