@@ -1,26 +1,55 @@
-/* ===== CSS Variables ===== */
+/* ===== CSS Variables - 2026 Neo-Brutalism + Glassmorphism 2.0 ===== */
 :root {
+    /* Core Colors */
     --primary: #6366f1;
     --primary-dark: #4f46e5;
     --secondary: #f59e0b;
     --gold: #fbbf24;
-    --dark: #0f172a;
-    --dark-lighter: #1e293b;
-    --dark-card: #1e293b;
+
+    /* 2026 Neon Accents */
+    --neon-cyan: #00f5ff;
+    --neon-pink: #ff00ea;
+    --neon-green: #00ff88;
+    --neon-purple: #bf00ff;
+
+    /* Dark Mode Base */
+    --dark: #0a0a0f;
+    --dark-lighter: #14141f;
+    --dark-card: #1a1a2e;
     --text: #f8fafc;
     --text-muted: #94a3b8;
-    --glass: rgba(255, 255, 255, 0.08);
-    --glass-border: rgba(255, 255, 255, 0.12);
+
+    /* Glassmorphism 2.0 */
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-glow: rgba(99, 102, 241, 0.15);
+
+    /* Neo-Brutalism Elements */
+    --brutal-border: 3px solid rgba(255, 255, 255, 0.9);
+    --brutal-shadow: 6px 6px 0px rgba(99, 102, 241, 0.8);
+    --brutal-shadow-hover: 8px 8px 0px rgba(99, 102, 241, 1);
+
+    /* Gradients */
     --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    --gradient-neon: linear-gradient(135deg, #00f5ff 0%, #bf00ff 50%, #ff00ea 100%);
     --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
     --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+
+    /* Shadows & Effects */
+    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 60px rgba(99, 102, 241, 0.4);
+    --shadow-neon: 0 0 30px rgba(0, 245, 255, 0.3);
+
+    /* Border Radius */
     --radius: 16px;
     --radius-sm: 8px;
     --radius-lg: 24px;
+    --radius-brutal: 4px;
+
+    /* Transitions */
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Light Mode */
@@ -156,6 +185,100 @@
 
 .animate-fadeInUp {
     animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ===== 2026 Kinetic Typography ===== */
+@keyframes textReveal {
+    from {
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        opacity: 0;
+    }
+
+    to {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        opacity: 1;
+    }
+}
+
+@keyframes textGlow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+    }
+
+    50% {
+        text-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
+    }
+}
+
+@keyframes letterPop {
+    0% {
+        transform: scale(0.8) translateY(20px);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1) translateY(-5px);
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.kinetic-title {
+    animation: textReveal 1s ease-out forwards;
+}
+
+.kinetic-glow {
+    animation: textGlow 3s ease-in-out infinite;
+}
+
+/* ===== Neo-Brutalism Components ===== */
+.brutal-card {
+    border: var(--brutal-border);
+    box-shadow: var(--brutal-shadow);
+    transition: var(--transition-bounce);
+    border-radius: var(--radius-brutal);
+}
+
+.brutal-card:hover {
+    box-shadow: var(--brutal-shadow-hover);
+    transform: translate(-2px, -2px);
+}
+
+.brutal-btn {
+    border: 3px solid currentColor;
+    box-shadow: 4px 4px 0px currentColor;
+    transition: var(--transition-bounce);
+    font-weight: 700;
+}
+
+.brutal-btn:hover {
+    box-shadow: 6px 6px 0px currentColor;
+    transform: translate(-2px, -2px);
+}
+
+.brutal-btn:active {
+    box-shadow: 2px 2px 0px currentColor;
+    transform: translate(2px, 2px);
+}
+
+/* Neon Text Effects */
+.neon-text {
+    background: var(--gradient-neon);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px var(--neon-cyan));
+}
+
+.neon-border {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--dark-card), var(--dark-card)) padding-box,
+        var(--gradient-neon) border-box;
 }
 
 .animate-fadeInDown {
@@ -1291,4 +1414,137 @@ section {
     justify-content: center;
     font-size: 1.1rem;
     padding: 15px;
+}
+
+/* ===== Command Palette (Ctrl+K) - 2026 Feature ===== */
+.command-palette-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+}
+
+.command-palette-overlay.active {
+    display: flex;
+}
+
+.command-palette {
+    width: 90%;
+    max-width: 600px;
+    background: var(--dark-card);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5), 0 0 60px var(--glass-glow);
+    animation: scaleIn 0.2s ease-out;
+}
+
+.command-input-wrapper {
+    padding: 20px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.command-input-wrapper .search-icon {
+    font-size: 1.4rem;
+    color: var(--neon-cyan);
+}
+
+.command-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text);
+    outline: none;
+}
+
+.command-input::placeholder {
+    color: var(--text-muted);
+}
+
+.command-shortcut {
+    background: var(--glass);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border: 1px solid var(--glass-border);
+}
+
+.command-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.command-result-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.command-result-item:hover,
+.command-result-item.active {
+    background: var(--glass);
+}
+
+.command-result-item:hover {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent);
+}
+
+.command-result-item .icon {
+    font-size: 1.3rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--glass);
+    border-radius: var(--radius-sm);
+}
+
+.command-result-item .text {
+    flex: 1;
+}
+
+.command-result-item .title {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+
+.command-result-item .subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.command-footer {
+    padding: 12px 20px;
+    background: var(--glass);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.command-footer kbd {
+    background: var(--dark-card);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--glass-border);
+    margin: 0 2px;
 }

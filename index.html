@@ -565,6 +565,130 @@
         </div>
     </div>
 
+    <!-- Command Palette (Ctrl+K) - 2026 Feature -->
+    <div class="command-palette-overlay" id="commandPalette">
+        <div class="command-palette">
+            <div class="command-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="command-input" id="commandInput" placeholder="ابحث في الإعلانات والفئات..."
+                    autocomplete="off">
+                <span class="command-shortcut">ESC للإغلاق</span>
+            </div>
+            <div class="command-results" id="commandResults">
+                <div class="command-result-item" data-action="category" data-value="all">
+                    <div class="icon">📋</div>
+                    <div class="text">
+                        <div class="title">جميع الإعلانات</div>
+                        <div class="subtitle">عرض كل الإعلانات المتاحة</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="category" data-value="home">
+                    <div class="icon">🏠</div>
+                    <div class="text">
+                        <div class="title">المنتجات والأجهزة</div>
+                        <div class="subtitle">أجهزة منزلية وإلكترونيات</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="category" data-value="cars">
+                    <div class="icon">🚗</div>
+                    <div class="text">
+                        <div class="title">سيارات</div>
+                        <div class="subtitle">سيارات ومركبات للبيع</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="category" data-value="realestate">
+                    <div class="icon">🏗️</div>
+                    <div class="text">
+                        <div class="title">عقارات</div>
+                        <div class="subtitle">شقق وأراضي ومحلات</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="category" data-value="services">
+                    <div class="icon">🔧</div>
+                    <div class="text">
+                        <div class="title">خدمات</div>
+                        <div class="subtitle">خدمات متنوعة</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="category" data-value="jobs">
+                    <div class="icon">💼</div>
+                    <div class="text">
+                        <div class="title">فرص العمل</div>
+                        <div class="subtitle">وظائف وفرص عمل</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="add">
+                    <div class="icon">➕</div>
+                    <div class="text">
+                        <div class="title">أضف إعلان جديد</div>
+                        <div class="subtitle">انشر إعلانك الآن</div>
+                    </div>
+                </div>
+            </div>
+            <div class="command-footer">
+                <span><kbd>↑</kbd><kbd>↓</kbd> للتنقل</span>
+                <span><kbd>Enter</kbd> للتحديد</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Command Palette Logic
+        const commandPalette = document.getElementById('commandPalette');
+        const commandInput = document.getElementById('commandInput');
+        const commandResults = document.getElementById('commandResults');
+
+        // Open with Ctrl+K
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                commandPalette.classList.add('active');
+                commandInput.focus();
+            }
+            if (e.key === 'Escape') {
+                commandPalette.classList.remove('active');
+            }
+        });
+
+        // Close on overlay click
+        commandPalette.addEventListener('click', (e) => {
+            if (e.target === commandPalette) {
+                commandPalette.classList.remove('active');
+            }
+        });
+
+        // Handle result clicks
+        commandResults.addEventListener('click', (e) => {
+            const item = e.target.closest('.command-result-item');
+            if (item) {
+                const action = item.dataset.action;
+                const value = item.dataset.value;
+
+                if (action === 'category') {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    const tab = document.querySelector(`.tab[data-tab="${value}"]`);
+                    if (tab) tab.classList.add('active');
+                    filterListings(value);
+                    document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+                } else if (action === 'add') {
+                    document.getElementById('adModal').classList.add('active');
+                }
+
+                commandPalette.classList.remove('active');
+                commandInput.value = '';
+            }
+        });
+
+        // Filter results based on input
+        commandInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.command-result-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        });
+    </script>
+
     <script src="script.js"></script>
 </body>
 
