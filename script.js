@@ -29,9 +29,11 @@ function shareFacebook(url) {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
 }
 
-function shareTwitter(title, url) {
-    const text = encodeURIComponent(`${title}`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
+function shareInstagram(title) {
+    // Instagram doesn't have a web share API, so we copy the link and show a message
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('✅ تم نسخ الرابط!\\nافتح انستغرام وشارك الرابط في قصتك أو رسالة');
+    });
 }
 
 function copyLink(url) {
@@ -338,7 +340,7 @@ function renderAds(ads) {
                     <div class="share-menu">
                         <button onclick="shareWhatsApp('${ad.title}', window.location.href)">💬 واتساب</button>
                         <button onclick="shareFacebook(window.location.href)">📘 فيسبوك</button>
-                        <button onclick="shareTwitter('${ad.title}', window.location.href)">🐦 تويتر</button>
+                        <button onclick="shareInstagram('${ad.title}')">📸 انستغرام</button>
                         <button onclick="copyLink(window.location.href)">📋 نسخ الرابط</button>
                     </div>
                 </div>
@@ -349,7 +351,7 @@ function renderAds(ads) {
                 <p class="listing-location">📍 ${ad.location}</p>
                 <p class="listing-description">${ad.description ? (ad.description.length > 150 ? ad.description.substring(0, 150) + '...' : ad.description) : ''}</p>
                 <div class="listing-footer">
-                    <div class="price">${ad.price}</div>
+                    <div class="price">${ad.price && !ad.price.includes('$') && !isNaN(ad.price) ? '$' + ad.price : ad.price}</div>
                 </div>
                 ${ad.whatsapp ? `<a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="listing-whatsapp">💬 تواصل واتساب</a>` : ''}
                 </div>
