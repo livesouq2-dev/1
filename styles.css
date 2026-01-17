@@ -685,15 +685,16 @@ section {
     position: absolute;
     top: 12px;
     left: 50px;
+    z-index: 50;
 }
 
 .share-btn {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--glass);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 1rem;
     cursor: pointer;
     transition: var(--transition);
@@ -711,43 +712,51 @@ section {
     position: absolute;
     top: 100%;
     left: 0;
-    background: var(--dark-card);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
+    background: rgba(20, 20, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
     padding: 8px;
-    min-width: 140px;
+    min-width: 160px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: var(--transition);
-    z-index: 100;
-    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 .share-dropdown.active .share-menu {
     opacity: 1;
     visibility: visible;
-    transform: translateY(5px);
+    transform: translateY(8px);
 }
 
 .share-menu button {
     width: 100%;
-    padding: 10px 12px;
-    background: none;
+    padding: 12px 14px;
+    background: transparent;
     border: none;
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-size: 0.85rem;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
     text-align: right;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.share-menu button:last-child {
+    margin-bottom: 0;
 }
 
 .share-menu button:hover {
-    background: var(--glass);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    transform: translateX(-3px);
 }
 
 .listing-info {
