@@ -575,10 +575,13 @@ textarea {
 }
 
 .gradient-text {
-    background: var(--gradient);
+    background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    display: block;
+    font-size: 1.3em;
+    margin-top: 10px;
 }
 
 .hero p {
