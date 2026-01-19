@@ -15,7 +15,7 @@ const adSchema = new mongoose.Schema({
     category: {
         type: String,
         required: [true, 'الفئة مطلوبة'],
-        enum: ['home', 'cars', 'realestate', 'services', 'jobs']
+        enum: ['home', 'cars', 'realestate', 'services', 'jobs', 'donations']
     },
     // Job-specific fields
     jobType: {

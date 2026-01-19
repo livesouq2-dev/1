@@ -90,7 +90,8 @@ function showAdDetail(adId) {
         cars: 'سيارات',
         realestate: 'عقارات',
         services: 'خدمات',
-        jobs: 'فرص العمل'
+        jobs: 'فرص العمل',
+        donations: 'تبرعات'
     };
 
     const categoryIcons = {
@@ -98,7 +99,8 @@ function showAdDetail(adId) {
         cars: '🚗',
         realestate: '🏗️',
         services: '🔧',
-        jobs: '💼'
+        jobs: '💼',
+        donations: '💝'
     };
 
     const jobTypeNames = {
@@ -313,14 +315,16 @@ function renderAds(ads) {
         cars: '🚗',
         realestate: '🏗️',
         services: '🔧',
-        jobs: '💼'
+        jobs: '💼',
+        donations: '💝'
     };
     const categoryNames = {
         home: 'المنتجات والأجهزة',
         cars: 'سيارات',
         realestate: 'عقارات',
         services: 'خدمات',
-        jobs: 'فرص العمل'
+        jobs: 'فرص العمل',
+        donations: 'تبرعات'
     };
 
     // Get favorites from localStorage

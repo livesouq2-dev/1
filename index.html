@@ -107,6 +107,11 @@
                     <h3>فرص العمل</h3>
                     <p id="countJobs">0 إعلان</p>
                 </div>
+                <div class="category-card donation-card" data-cat="donations">
+                    <div class="icon">💝</div>
+                    <h3>تبرعات</h3>
+                    <p id="countDonations">0 إعلان</p>
+                </div>
             </div>
         </div>
     </section>
@@ -124,6 +129,7 @@
                 <button class="tab" data-tab="realestate">عقارات</button>
                 <button class="tab" data-tab="services">خدمات</button>
                 <button class="tab" data-tab="jobs">💼 فرص العمل</button>
+                <button class="tab" data-tab="donations">💝 تبرعات</button>
             </div>
             <div class="listings-grid" id="listingsGrid">
                 <div class="empty-state" id="emptyState">
@@ -317,6 +323,7 @@
                         <option value="realestate">عقارات</option>
                         <option value="services">خدمات</option>
                         <option value="jobs">💼 فرص العمل</option>
+                        <option value="donations">💝 تبرعات</option>
                     </select></div>
                 <div class="form-group"><label id="titleLabel">عنوان الإعلان</label><input type="text" id="adTitle"
                         placeholder="مثال: سيارة BMW للبيع" required></div>
@@ -615,6 +622,13 @@
                     <div class="text">
                         <div class="title">فرص العمل</div>
                         <div class="subtitle">وظائف وفرص عمل</div>
+                    </div>
+                </div>
+                <div class="command-result-item" data-action="category" data-value="donations">
+                    <div class="icon">💝</div>
+                    <div class="text">
+                        <div class="title">تبرعات</div>
+                        <div class="subtitle">تبرعات مجانية للمحتاجين</div>
                     </div>
                 </div>
                 <div class="command-result-item" data-action="add">
