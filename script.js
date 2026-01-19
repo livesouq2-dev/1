@@ -95,7 +95,7 @@ function showAdDetail(adId) {
     };
 
     const categoryIcons = {
-        home: '🏠',
+        home: '📱',
         cars: '🚗',
         realestate: '🏗️',
         services: '🔧',
@@ -311,7 +311,7 @@ async function loadAds(category = 'all') {
 
 function renderAds(ads) {
     const categoryIcons = {
-        home: '🏠',
+        home: '📱',
         cars: '🚗',
         realestate: '🏗️',
         services: '🔧',
