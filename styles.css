@@ -586,13 +586,15 @@ textarea {
 
 /* Mobile: Larger gradient-text */
 @media (max-width: 768px) {
-    .gradient-text {
-        font-size: 2.8em;
-        margin-top: 15px;
+    .hero h1 {
+        font-size: 1.8rem;
+        line-height: 1.4;
     }
 
-    .hero h1 {
-        font-size: 2rem;
+    .gradient-text {
+        font-size: 2.5rem !important;
+        margin-top: 12px;
+        font-weight: 900;
     }
 }
 
