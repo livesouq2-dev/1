@@ -584,6 +584,18 @@ textarea {
     margin-top: 10px;
 }
 
+/* Mobile: Larger gradient-text */
+@media (max-width: 768px) {
+    .gradient-text {
+        font-size: 2.8em;
+        margin-top: 15px;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+}
+
 .hero p {
     font-size: 1.2rem;
     color: var(--text-muted);
