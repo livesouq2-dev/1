@@ -1,50 +1,56 @@
-/* ===== CSS Variables - 2026 Neo-Brutalism + Glassmorphism 2.0 ===== */
+/* ===== CSS Variables - 2026 Modern Blue & Gold Theme ===== */
 :root {
-    /* Core Colors */
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
+    /* Primary Colors - Electric Blue */
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --primary-light: #38bdf8;
+
+    /* Secondary Colors - Warm Gold */
     --secondary: #f59e0b;
     --gold: #fbbf24;
+    --gold-dark: #d97706;
 
-    /* 2026 Neon Accents */
-    --neon-cyan: #00f5ff;
-    --neon-pink: #ff00ea;
-    --neon-green: #00ff88;
-    --neon-purple: #bf00ff;
+    /* 2026 Accent Colors */
+    --accent-cyan: #22d3ee;
+    --accent-blue: #3b82f6;
+    --accent-amber: #fcd34d;
+    --accent-orange: #fb923c;
 
-    /* Dark Mode Base */
-    --dark: #0a0a0f;
-    --dark-lighter: #14141f;
-    --dark-card: #1a1a2e;
-    --text: #f8fafc;
+    /* Dark Mode Base - Deep Navy */
+    --dark: #0c1222;
+    --dark-lighter: #162032;
+    --dark-card: #1e2a3a;
+    --dark-accent: #243447;
+    --text: #f1f5f9;
     --text-muted: #94a3b8;
 
-    /* Glassmorphism 2.0 */
-    --glass: rgba(255, 255, 255, 0.06);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-glow: rgba(99, 102, 241, 0.15);
+    /* Glassmorphism 2.0 - Blue Tint */
+    --glass: rgba(14, 165, 233, 0.08);
+    --glass-border: rgba(56, 189, 248, 0.15);
+    --glass-glow: rgba(14, 165, 233, 0.2);
 
     /* Neo-Brutalism Elements */
-    --brutal-border: 3px solid rgba(255, 255, 255, 0.9);
-    --brutal-shadow: 6px 6px 0px rgba(99, 102, 241, 0.8);
-    --brutal-shadow-hover: 8px 8px 0px rgba(99, 102, 241, 1);
+    --brutal-border: 3px solid rgba(56, 189, 248, 0.8);
+    --brutal-shadow: 6px 6px 0px rgba(14, 165, 233, 0.7);
+    --brutal-shadow-hover: 8px 8px 0px rgba(14, 165, 233, 0.9);
 
-    /* Gradients */
-    --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-    --gradient-neon: linear-gradient(135deg, #00f5ff 0%, #bf00ff 50%, #ff00ea 100%);
-    --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    /* Gradients - Blue to Gold */
+    --gradient: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%);
+    --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
+    --gradient-mixed: linear-gradient(135deg, #0ea5e9 0%, #f59e0b 100%);
     --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    --gradient-card: linear-gradient(180deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
 
     /* Shadows & Effects */
-    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 60px rgba(99, 102, 241, 0.4);
-    --shadow-neon: 0 0 30px rgba(0, 245, 255, 0.3);
+    --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 60px rgba(14, 165, 233, 0.3);
+    --shadow-gold: 0 0 40px rgba(251, 191, 36, 0.25);
 
     /* Border Radius */
     --radius: 16px;
-    --radius-sm: 8px;
+    --radius-sm: 10px;
     --radius-lg: 24px;
-    --radius-brutal: 4px;
+    --radius-xl: 32px;
 
     /* Transitions */
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
