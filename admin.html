@@ -642,13 +642,16 @@
                 const { ads } = await res.json();
                 const tbody = document.getElementById('allAdsTable');
                 tbody.innerHTML = ads.length ? ads.map(ad => `
-                    <tr>
-                        <td>${ad.title}</td>
+                    <tr class="${ad.isFeatured ? 'featured-row' : ''}">
+                        <td>${ad.isFeatured ? '⭐ ' : ''}${ad.title}</td>
                         <td>${getCategoryName(ad.category)}</td>
                         <td>${ad.price}</td>
                         <td><span class="status-badge status-${ad.status}">${getStatusName(ad.status)}</span></td>
                         <td>${ad.user?.name || '-'}</td>
-                        <td><button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button></td>
+                        <td>
+                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}')">✏️</button>
+                            <button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button>
+                        </td>
                     </tr>
                 `).join('') : '<tr><td colspan="6" class="empty-state">لا توجد إعلانات</td></tr>';
             } catch (e) { console.error(e); }
