@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
         }
         const ads = await Ad.find(query)
             .populate('user', 'name')
-            .sort({ createdAt: -1 });
+            .sort({ isFeatured: -1, createdAt: -1 });
         res.json({ ads });
     } catch (error) {
         res.status(500).json({ message: error.message });

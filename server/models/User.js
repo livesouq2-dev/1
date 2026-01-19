@@ -35,6 +35,20 @@ const userSchema = new mongoose.Schema({
     lastActive: {
         type: Date,
         default: Date.now
+    },
+    // Premium membership fields
+    isPremium: {
+        type: Boolean,
+        default: false
+    },
+    premiumExpiry: {
+        type: Date,
+        default: null
+    },
+    premiumPlan: {
+        type: String,
+        enum: ['none', 'gold', 'platinum'],
+        default: 'none'
     }
 }, {
     timestamps: true

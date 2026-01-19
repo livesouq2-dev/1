@@ -787,6 +787,39 @@ section {
     box-shadow: var(--shadow);
 }
 
+/* ===== Featured/Premium Ad Cards ===== */
+.listing-card.featured {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+    position: relative;
+}
+
+.listing-card.featured::before {
+    content: '⭐ مميز';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--gradient-gold);
+    color: #1a1a2e;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+}
+
+.listing-card.featured:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(251, 191, 36, 0.3);
+}
+
+.listing-card.featured .price {
+    color: var(--gold);
+    font-weight: 800;
+}
+
 .listing-img {
     position: relative;
     height: 200px;
