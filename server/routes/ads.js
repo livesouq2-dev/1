@@ -39,6 +39,17 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get public stats (users count, ads count)
+router.get('/stats', async (req, res) => {
+    try {
+        const totalAds = await Ad.countDocuments({ status: 'approved' });
+        const totalUsers = await User.countDocuments({ isActive: true });
+        res.json({ totalAds, totalUsers });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get user's ads
 router.get('/my-ads', auth, async (req, res) => {
     try {

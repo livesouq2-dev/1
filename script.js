@@ -19,6 +19,20 @@ function toggleTheme() {
     if (themeBtn) themeBtn.textContent = newTheme === 'dark' ? '🌙' : '☀️';
 }
 
+// ===== Load Public Stats (Users & Ads count) =====
+async function loadStats() {
+    try {
+        const res = await fetch(`${API}/api/ads/stats`);
+        const data = await res.json();
+        const statUsers = document.getElementById('statUsers');
+        const statAds = document.getElementById('statAds');
+        if (statUsers && data.totalUsers) statUsers.textContent = data.totalUsers;
+        if (statAds && data.totalAds) statAds.textContent = data.totalAds;
+    } catch (e) {
+        console.error('Failed to load stats:', e);
+    }
+}
+
 // ===== Share Functions =====
 function shareWhatsApp(title, url) {
     const text = encodeURIComponent(`شاهد هذا الإعلان: ${title}\n${url}`);
@@ -1061,3 +1075,6 @@ document.getElementById('bottomProfileBtn')?.addEventListener('click', () => {
 });
 
 console.log('%c🛒 بدّل وبيع', 'font-size: 24px; font-weight: bold; color: #6366f1;');
+
+// Load stats on page load
+loadStats();
