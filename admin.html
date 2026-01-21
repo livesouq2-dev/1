@@ -468,13 +468,20 @@
                 </div>
                 <div class="form-group">
                     <label>الفئة</label>
-                    <select id="editCategory" required onchange="toggleAdminJobFields()">
+                    <select id="editCategory" required onchange="toggleAdminJobFields(); updateAdminSubCategories()">
                         <option value="home">المنتجات والأجهزة</option>
                         <option value="cars">سيارات</option>
                         <option value="realestate">عقارات</option>
                         <option value="services">خدمات</option>
                         <option value="jobs">💼 فرص العمل</option>
                         <option value="donations">💝 تبرعات</option>
+                    </select>
+                </div>
+                <!-- Sub-Category dropdown -->
+                <div class="form-group" id="adminSubCategoryGroup" style="display: none;">
+                    <label>النوع / الماركة</label>
+                    <select id="editSubCategory">
+                        <option value="">اختر النوع</option>
                     </select>
                 </div>
                 <!-- Job-specific fields -->
@@ -741,6 +748,67 @@
                 jobFields.style.display = 'none';
             }
         }
+
+        // Sub-Categories data (Lebanon-specific)
+        const adminSubCategories = {
+            cars: [
+                { value: 'toyota', label: 'تويوتا' },
+                { value: 'mercedes', label: 'مرسيدس' },
+                { value: 'bmw', label: 'BMW' },
+                { value: 'kia', label: 'كيا' },
+                { value: 'hyundai', label: 'هيونداي' },
+                { value: 'nissan', label: 'نيسان' },
+                { value: 'honda', label: 'هوندا' },
+                { value: 'other_car', label: 'أخرى' }
+            ],
+            realestate: [
+                { value: 'apartment_sale', label: 'شقة للبيع' },
+                { value: 'apartment_rent', label: 'شقة للإيجار' },
+                { value: 'villa', label: 'فيلا' },
+                { value: 'land', label: 'أرض' },
+                { value: 'office', label: 'مكتب' },
+                { value: 'shop', label: 'محل تجاري' }
+            ],
+            home: [
+                { value: 'phones', label: '📱 هواتف' },
+                { value: 'laptops', label: '💻 لابتوب' },
+                { value: 'appliances', label: '🏠 أجهزة منزلية' },
+                { value: 'furniture', label: '🪑 أثاث' },
+                { value: 'other_product', label: 'أخرى' }
+            ],
+            services: [
+                { value: 'electrical', label: '⚡ كهرباء' },
+                { value: 'plumbing', label: '🔧 سباكة' },
+                { value: 'moving', label: '🚚 نقل أثاث' },
+                { value: 'cleaning', label: '🧹 تنظيف' },
+                { value: 'other_service', label: 'أخرى' }
+            ]
+        };
+
+        // Update Sub-Categories dropdown for admin
+        function updateAdminSubCategories(selectedValue = '') {
+            const category = document.getElementById('editCategory').value;
+            const subCategoryGroup = document.getElementById('adminSubCategoryGroup');
+            const subCategorySelect = document.getElementById('editSubCategory');
+
+            if (!subCategoryGroup || !subCategorySelect) return;
+
+            subCategorySelect.innerHTML = '<option value="">اختر النوع</option>';
+
+            if (adminSubCategories[category]) {
+                subCategoryGroup.style.display = 'block';
+                adminSubCategories[category].forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub.value;
+                    option.textContent = sub.label;
+                    if (sub.value === selectedValue) option.selected = true;
+                    subCategorySelect.appendChild(option);
+                });
+            } else {
+                subCategoryGroup.style.display = 'none';
+            }
+        }
+
         function getStatusName(status) {
             const names = { pending: 'بانتظار', approved: 'موافق', rejected: 'مرفوض' };
             return names[status] || status;

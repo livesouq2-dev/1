@@ -92,6 +92,91 @@ function toggleJobFields() {
     }
 }
 
+// ===== Sub-Categories Data (Lebanon-specific) =====
+const subCategories = {
+    cars: [
+        { value: 'toyota', label: 'تويوتا' },
+        { value: 'mercedes', label: 'مرسيدس' },
+        { value: 'bmw', label: 'BMW' },
+        { value: 'kia', label: 'كيا' },
+        { value: 'hyundai', label: 'هيونداي' },
+        { value: 'nissan', label: 'نيسان' },
+        { value: 'honda', label: 'هوندا' },
+        { value: 'chevrolet', label: 'شيفروليه' },
+        { value: 'ford', label: 'فورد' },
+        { value: 'audi', label: 'أودي' },
+        { value: 'volkswagen', label: 'فولكسفاجن' },
+        { value: 'renault', label: 'رينو' },
+        { value: 'peugeot', label: 'بيجو' },
+        { value: 'other_car', label: 'أخرى' }
+    ],
+    realestate: [
+        { value: 'apartment_sale', label: 'شقة للبيع' },
+        { value: 'apartment_rent', label: 'شقة للإيجار' },
+        { value: 'villa', label: 'فيلا' },
+        { value: 'land', label: 'أرض' },
+        { value: 'office', label: 'مكتب' },
+        { value: 'shop', label: 'محل تجاري' },
+        { value: 'warehouse', label: 'مستودع' },
+        { value: 'building', label: 'مبنى كامل' },
+        { value: 'chalet', label: 'شاليه' }
+    ],
+    home: [
+        { value: 'phones', label: '📱 هواتف' },
+        { value: 'laptops', label: '💻 لابتوب' },
+        { value: 'tablets', label: '📲 تابلت' },
+        { value: 'tv', label: '📺 تلفزيون' },
+        { value: 'appliances', label: '🏠 أجهزة منزلية' },
+        { value: 'furniture', label: '🪑 أثاث' },
+        { value: 'clothes', label: '👔 ملابس' },
+        { value: 'accessories', label: '⌚ اكسسوارات' },
+        { value: 'gaming', label: '🎮 ألعاب' },
+        { value: 'other_product', label: 'أخرى' }
+    ],
+    services: [
+        { value: 'electrical', label: '⚡ كهرباء' },
+        { value: 'plumbing', label: '🔧 سباكة' },
+        { value: 'moving', label: '🚚 نقل أثاث' },
+        { value: 'cleaning', label: '🧹 تنظيف' },
+        { value: 'car_repair', label: '🔧 صيانة سيارات' },
+        { value: 'ac_repair', label: '❄️ تصليح مكيفات' },
+        { value: 'painting', label: '🎨 دهان' },
+        { value: 'carpentry', label: '🪚 نجارة' },
+        { value: 'tutoring', label: '📚 دروس خصوصية' },
+        { value: 'delivery', label: '📦 توصيل' },
+        { value: 'other_service', label: 'أخرى' }
+    ]
+};
+
+// ===== Update Sub-Categories Dropdown =====
+function updateSubCategories() {
+    const category = document.getElementById('adCategory')?.value;
+    const subCategoryGroup = document.getElementById('subCategoryGroup');
+    const subCategorySelect = document.getElementById('adSubCategory');
+
+    if (!subCategoryGroup || !subCategorySelect) return;
+
+    // Clear existing options
+    subCategorySelect.innerHTML = '<option value="">اختر النوع</option>';
+
+    // Check if category has subcategories
+    if (subCategories[category]) {
+        // Show the dropdown
+        subCategoryGroup.style.display = 'block';
+
+        // Add options
+        subCategories[category].forEach(sub => {
+            const option = document.createElement('option');
+            option.value = sub.value;
+            option.textContent = sub.label;
+            subCategorySelect.appendChild(option);
+        });
+    } else {
+        // Hide for jobs and donations
+        subCategoryGroup.style.display = 'none';
+    }
+}
+
 // ===== Show Ad Detail Modal =====
 let allAdsData = []; // Store ads globally for detail view
 
