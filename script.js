@@ -580,8 +580,9 @@ function setupEventListeners() {
             // Close submenu
             btn.closest('.tab-submenu').classList.remove('active');
 
-            // Load filtered ads
-            loadAds(category, subCategory);
+            // Load filtered ads - if "all_*" then show all ads in category
+            const filterSub = subCategory.startsWith('all_') ? null : subCategory;
+            loadAds(category, filterSub);
         });
     });
 
