@@ -380,15 +380,22 @@ function logout() {
 }
 
 // ===== Load Ads from API =====
-async function loadAds(category = 'all') {
+async function loadAds(category = 'all', subCategory = null) {
     try {
         const url = category === 'all' ? `${API}/api/ads` : `${API}/api/ads?category=${category}`;
         const res = await fetch(url);
         const data = await res.json();
 
         if (data.ads && data.ads.length > 0) {
-            allAdsData = data.ads; // Store for detail view
-            renderAds(data.ads);
+            let filteredAds = data.ads;
+
+            // Filter by subCategory if provided
+            if (subCategory) {
+                filteredAds = data.ads.filter(ad => ad.subCategory === subCategory);
+            }
+
+            allAdsData = data.ads; // Store all for detail view
+            renderAds(filteredAds);
             updateCategoryCounts(data.ads);
         } else {
             listingsGrid.innerHTML = `
@@ -533,13 +540,54 @@ function setupEventListeners() {
         else openModal('postAdModal');
     });
 
-    // Category tabs
+    // Category tabs with dropdown support
     tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
+        tab.addEventListener('click', (e) => {
+            const parent = tab.closest('.tab-dropdown');
+            const submenu = parent?.querySelector('.tab-submenu');
+
+            // Toggle submenu if tab has one
+            if (submenu) {
+                e.stopPropagation();
+                // Close other submenus
+                document.querySelectorAll('.tab-submenu.active').forEach(s => {
+                    if (s !== submenu) s.classList.remove('active');
+                });
+                submenu.classList.toggle('active');
+            }
+
+            // Set active state and load ads
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             loadAds(tab.dataset.tab);
         });
+    });
+
+    // Subcategory buttons click handler
+    document.querySelectorAll('.tab-submenu button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const subCategory = btn.dataset.sub;
+            const parentTab = btn.closest('.tab-dropdown').querySelector('.tab');
+            const category = parentTab.dataset.tab;
+
+            // Update active states
+            document.querySelectorAll('.tab-submenu button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            tabs.forEach(t => t.classList.remove('active'));
+            parentTab.classList.add('active');
+
+            // Close submenu
+            btn.closest('.tab-submenu').classList.remove('active');
+
+            // Load filtered ads
+            loadAds(category, subCategory);
+        });
+    });
+
+    // Close submenus when clicking outside
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.tab-submenu.active').forEach(s => s.classList.remove('active'));
     });
 
     // Category cards

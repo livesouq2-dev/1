@@ -754,6 +754,56 @@ section {
     border-color: transparent;
 }
 
+/* Tab Dropdown Styles */
+.tab-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.tab-submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    min-width: 150px;
+    background: var(--dark-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px;
+    margin-top: 8px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.tab-submenu.active {
+    display: block;
+}
+
+.tab-submenu button {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.9rem;
+    text-align: right;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.tab-submenu button:hover {
+    background: var(--glass);
+    color: var(--primary-light);
+}
+
+.tab-submenu button.active {
+    background: var(--primary);
+    color: white;
+}
+
 .listings-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

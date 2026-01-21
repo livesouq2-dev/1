@@ -124,10 +124,51 @@
             </div>
             <div class="tabs">
                 <button class="tab active" data-tab="all">الكل</button>
-                <button class="tab" data-tab="home">المنتجات والأجهزة</button>
-                <button class="tab" data-tab="cars">سيارات</button>
-                <button class="tab" data-tab="realestate">عقارات</button>
-                <button class="tab" data-tab="services">خدمات</button>
+                <div class="tab-dropdown">
+                    <button class="tab" data-tab="home">المنتجات والأجهزة ▾</button>
+                    <div class="tab-submenu" id="submenu-home">
+                        <button data-sub="phones">📱 هواتف</button>
+                        <button data-sub="laptops">💻 لابتوب</button>
+                        <button data-sub="appliances">🏠 أجهزة منزلية</button>
+                        <button data-sub="furniture">🪑 أثاث</button>
+                        <button data-sub="other_product">أخرى</button>
+                    </div>
+                </div>
+                <div class="tab-dropdown">
+                    <button class="tab" data-tab="cars">سيارات ▾</button>
+                    <div class="tab-submenu" id="submenu-cars">
+                        <button data-sub="toyota">تويوتا</button>
+                        <button data-sub="mercedes">مرسيدس</button>
+                        <button data-sub="bmw">BMW</button>
+                        <button data-sub="kia">كيا</button>
+                        <button data-sub="hyundai">هيونداي</button>
+                        <button data-sub="nissan">نيسان</button>
+                        <button data-sub="honda">هوندا</button>
+                        <button data-sub="other_car">أخرى</button>
+                    </div>
+                </div>
+                <div class="tab-dropdown">
+                    <button class="tab" data-tab="realestate">عقارات ▾</button>
+                    <div class="tab-submenu" id="submenu-realestate">
+                        <button data-sub="apartment_sale">شقة للبيع</button>
+                        <button data-sub="apartment_rent">شقة للإيجار</button>
+                        <button data-sub="villa">فيلا</button>
+                        <button data-sub="land">أرض</button>
+                        <button data-sub="office">مكتب</button>
+                        <button data-sub="shop">محل تجاري</button>
+                    </div>
+                </div>
+                <div class="tab-dropdown">
+                    <button class="tab" data-tab="services">خدمات ▾</button>
+                    <div class="tab-submenu" id="submenu-services">
+                        <button data-sub="electrical">⚡ كهرباء</button>
+                        <button data-sub="plumbing">🔧 سباكة</button>
+                        <button data-sub="moving">🚚 نقل أثاث</button>
+                        <button data-sub="cleaning">🧹 تنظيف</button>
+                        <button data-sub="car_repair">صيانة سيارات</button>
+                        <button data-sub="other_service">أخرى</button>
+                    </div>
+                </div>
                 <button class="tab" data-tab="jobs">💼 فرص العمل</button>
                 <button class="tab" data-tab="donations">💝 تبرعات</button>
             </div>
