@@ -632,7 +632,7 @@
                         <td style="direction:ltr">${ad.user?.phone || '-'}</td>
                         <td>${new Date(ad.createdAt).toLocaleDateString('ar')}</td>
                         <td>
-                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}')">✏️ تعديل</button>
+                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}', '${ad.subCategory || ''}')">✏️ تعديل</button>
                             <button class="action-btn btn-approve" onclick="approveAd('${ad._id}')">✓ قبول</button>
                             <button class="action-btn btn-reject" onclick="rejectAd('${ad._id}')">✗ رفض</button>
                         </td>
@@ -656,7 +656,7 @@
                         <td><span class="status-badge status-${ad.status}">${getStatusName(ad.status)}</span></td>
                         <td>${ad.user?.name || '-'}</td>
                         <td>
-                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}')">✏️</button>
+                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}', '${ad.subCategory || ''}')">✏️</button>
                             <button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button>
                         </td>
                     </tr>
@@ -815,7 +815,7 @@
         }
 
         // Edit Ad Functions
-        function openEditAd(id, title, category, price, location, whatsapp, description, jobType, jobExperience, isFeatured) {
+        function openEditAd(id, title, category, price, location, whatsapp, description, jobType, jobExperience, isFeatured, subCategory) {
             document.getElementById('editAdId').value = id;
             document.getElementById('editTitle').value = title;
             document.getElementById('editCategory').value = category;
@@ -827,6 +827,7 @@
             document.getElementById('editJobExperience').value = jobExperience || '';
             document.getElementById('editFeatured').checked = isFeatured === 'true' || isFeatured === true;
             toggleAdminJobFields();
+            updateAdminSubCategories(subCategory || '');
             document.getElementById('editAdModal').classList.add('active');
         }
 
@@ -841,6 +842,7 @@
             const data = {
                 title: document.getElementById('editTitle').value,
                 category: category,
+                subCategory: document.getElementById('editSubCategory').value || null,
                 price: document.getElementById('editPrice').value,
                 location: document.getElementById('editLocation').value,
                 whatsapp: document.getElementById('editWhatsapp').value,
