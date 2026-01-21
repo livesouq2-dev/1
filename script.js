@@ -177,6 +177,36 @@ function updateSubCategories() {
     }
 }
 
+// ===== Update Sub-Categories for Edit Modal =====
+function updateEditSubCategories(selectedValue = '') {
+    const category = document.getElementById('editAdCategory')?.value;
+    const subCategoryGroup = document.getElementById('editSubCategoryGroup');
+    const subCategorySelect = document.getElementById('editAdSubCategory');
+
+    if (!subCategoryGroup || !subCategorySelect) return;
+
+    // Clear existing options
+    subCategorySelect.innerHTML = '<option value="">اختر النوع</option>';
+
+    // Check if category has subcategories
+    if (subCategories[category]) {
+        // Show the dropdown
+        subCategoryGroup.style.display = 'block';
+
+        // Add options
+        subCategories[category].forEach(sub => {
+            const option = document.createElement('option');
+            option.value = sub.value;
+            option.textContent = sub.label;
+            if (sub.value === selectedValue) option.selected = true;
+            subCategorySelect.appendChild(option);
+        });
+    } else {
+        // Hide for jobs and donations
+        subCategoryGroup.style.display = 'none';
+    }
+}
+
 // ===== Show Ad Detail Modal =====
 let allAdsData = []; // Store ads globally for detail view
 
@@ -787,6 +817,7 @@ function setupEventListeners() {
         const adData = {
             title: document.getElementById('editAdTitle').value,
             category: document.getElementById('editAdCategory').value,
+            subCategory: document.getElementById('editAdSubCategory')?.value || null,
             price: document.getElementById('editAdPrice').value,
             location: document.getElementById('editAdLocation').value,
             description: document.getElementById('editAdDescription').value
@@ -848,7 +879,7 @@ function renderMyAds(ads) {
                         <span class="ad-status" style="color:${statusColors[ad.status]}">${statusLabels[ad.status]}</span>
                     </div>
                     <div class="my-ad-actions">
-                        <button class="btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location}', '${ad.description || ''}')">✏️ تعديل</button>
+                        <button class="btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location}', '${ad.description || ''}', '${ad.subCategory || ''}')">✏️ تعديل</button>
                         <button class="btn-delete" onclick="deleteMyAd('${ad._id}')">🗑️ حذف</button>
                     </div>
                 </div>
@@ -858,13 +889,14 @@ function renderMyAds(ads) {
 }
 
 // Open Edit Ad Modal
-function openEditAd(id, title, category, price, location, description) {
+function openEditAd(id, title, category, price, location, description, subCategory) {
     document.getElementById('editAdId').value = id;
     document.getElementById('editAdTitle').value = title;
     document.getElementById('editAdCategory').value = category;
     document.getElementById('editAdPrice').value = price;
     document.getElementById('editAdLocation').value = location;
     document.getElementById('editAdDescription').value = description;
+    updateEditSubCategories(subCategory || '');
     closeModal('myAdsModal');
     openModal('editAdModal');
 }

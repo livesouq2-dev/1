@@ -108,10 +108,11 @@ router.put('/:id', auth, async (req, res) => {
             return res.status(403).json({ message: 'غير مصرح لك بتعديل هذا الإعلان' });
         }
 
-        const { title, description, category, price, location, images } = req.body;
+        const { title, description, category, subCategory, price, location, images } = req.body;
         ad.title = title || ad.title;
         ad.description = description || ad.description;
         ad.category = category || ad.category;
+        ad.subCategory = subCategory !== undefined ? subCategory : ad.subCategory;
         ad.price = price || ad.price;
         ad.location = location || ad.location;
         ad.images = images || ad.images;

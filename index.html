@@ -473,13 +473,21 @@
             <form id="editAdForm">
                 <input type="hidden" id="editAdId">
                 <div class="form-group"><label>عنوان الإعلان</label><input type="text" id="editAdTitle" required></div>
-                <div class="form-group"><label>الفئة</label><select id="editAdCategory" required>
+                <div class="form-group"><label>الفئة</label><select id="editAdCategory" required
+                        onchange="updateEditSubCategories()">
                         <option value="home">المنتجات والأجهزة</option>
                         <option value="cars">سيارات</option>
                         <option value="realestate">عقارات</option>
                         <option value="services">خدمات</option>
                         <option value="jobs">💼 فرص العمل</option>
                     </select></div>
+                <!-- Sub-Category dropdown -->
+                <div class="form-group" id="editSubCategoryGroup" style="display: none;">
+                    <label>النوع / الماركة</label>
+                    <select id="editAdSubCategory">
+                        <option value="">اختر النوع</option>
+                    </select>
+                </div>
                 <div class="form-group"><label>السعر</label><input type="text" id="editAdPrice" required></div>
                 <div class="form-group"><label>الموقع</label><input type="text" id="editAdLocation" required></div>
                 <div class="form-group"><label>الوصف</label><textarea id="editAdDescription" rows="3"
