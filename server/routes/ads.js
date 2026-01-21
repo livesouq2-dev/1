@@ -63,12 +63,13 @@ router.get('/my-ads', auth, async (req, res) => {
 // Create ad (protected) - requires approval
 router.post('/', auth, async (req, res) => {
     try {
-        const { title, description, category, price, location, whatsapp, images, jobType, jobExperience } = req.body;
+        const { title, description, category, subCategory, price, location, whatsapp, images, jobType, jobExperience } = req.body;
 
         const adData = {
             title,
             description,
             category,
+            subCategory: subCategory || null,
             price,
             location,
             whatsapp,

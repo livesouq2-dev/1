@@ -395,7 +395,18 @@ async function loadAds(category = 'all', subCategory = null) {
             }
 
             allAdsData = data.ads; // Store all for detail view
-            renderAds(filteredAds);
+
+            // Check if filtered results are empty
+            if (filteredAds.length > 0) {
+                renderAds(filteredAds);
+            } else {
+                listingsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <p>📭 لا توجد إعلانات لهذا النوع حالياً</p>
+                        <p>جرب اختيار "الكل" لعرض جميع الإعلانات في هذه الفئة</p>
+                    </div>
+                `;
+            }
             updateCategoryCounts(data.ads);
         } else {
             listingsGrid.innerHTML = `
@@ -682,9 +693,11 @@ function setupEventListeners() {
         }
 
         const category = document.getElementById('adCategory').value;
+        const subCategory = document.getElementById('adSubCategory')?.value || null;
         const adData = {
             title: document.getElementById('adTitle').value,
             category: category,
+            subCategory: subCategory,
             price: document.getElementById('adPrice').value,
             location: document.getElementById('adLocation').value,
             whatsapp: document.getElementById('adWhatsapp').value,
