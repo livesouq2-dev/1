@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Ad = require('../models/Ad');
 const User = require('../models/User');
+const Prices = require('../models/Prices');
 
 // Admin auth middleware
 const adminAuth = async (req, res, next) => {
@@ -185,6 +186,46 @@ router.post('/setup', async (req, res) => {
             role: 'admin'
         });
         res.json({ message: 'تم إنشاء حساب المشرف', email: 'admin@badel.com', password: 'admin123' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ===== PRICES MANAGEMENT =====
+
+// Get current prices (admin)
+router.get('/prices', adminAuth, async (req, res) => {
+    try {
+        const prices = await Prices.getPrices();
+        res.json(prices);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Update prices (admin only)
+router.put('/prices', adminAuth, async (req, res) => {
+    try {
+        const { goldOunce, goldLira, silverOunce, dollarRate } = req.body;
+
+        let prices = await Prices.findOne();
+        if (!prices) {
+            prices = new Prices();
+        }
+
+        if (goldOunce !== undefined) prices.goldOunce = goldOunce;
+        if (goldLira !== undefined) prices.goldLira = goldLira;
+        if (silverOunce !== undefined) prices.silverOunce = silverOunce;
+        if (dollarRate !== undefined) prices.dollarRate = dollarRate;
+        prices.updatedAt = new Date();
+        prices.updatedBy = req.user.name || 'admin';
+
+        await prices.save();
+
+        res.json({
+            message: 'تم تحديث الأسعار بنجاح',
+            prices
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

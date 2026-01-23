@@ -33,44 +33,31 @@ async function loadStats() {
     }
 }
 
-// ===== Load Gold, Silver & Dollar Prices =====
+// ===== Load Gold, Silver & Dollar Prices from Backend =====
 async function loadPrices() {
-    // Lebanese Market Prices (January 2026)
-    // Updated manually - for accurate prices contact gold dealers
-    let goldPrice = 5400;      // USD per ounce (أونصة الذهب)
-    let silverPrice = 98;       // USD per ounce (أونصة الفضة)
-    let goldLiraPrice = 1070;   // USD per gold lira (ليرة الذهب الرشادي)
-    const dollarRate = 89500;   // Lebanese Lira per USD
-
     try {
-        // Try to fetch live prices from metals.live API
-        const metalsRes = await fetch('https://api.metals.live/v1/spot');
-        if (metalsRes.ok) {
-            const metalsData = await metalsRes.json();
+        const res = await fetch(`${API}/api/ads/prices`);
+        if (res.ok) {
+            const data = await res.json();
 
-            // metals.live returns array of objects like [{gold: 2650}, {silver: 30}]
-            if (Array.isArray(metalsData)) {
-                metalsData.forEach(item => {
-                    if (item.gold) goldPrice = item.gold;
-                    if (item.silver) silverPrice = item.silver;
-                });
+            // Update DOM with prices from database
+            document.getElementById('goldPrice').textContent = `$${data.goldOunce?.toLocaleString() || '--'}`;
+            document.getElementById('goldLiraPrice').textContent = `$${data.goldLira?.toLocaleString() || '--'}`;
+            document.getElementById('silverPrice').textContent = `$${data.silverOunce?.toLocaleString() || '--'}`;
+            document.getElementById('dollarPrice').textContent = `${data.dollarRate?.toLocaleString() || '--'} ل.ل`;
+
+            // Update timestamp
+            if (data.updatedAt) {
+                const updateTime = new Date(data.updatedAt);
+                const timeStr = updateTime.toLocaleDateString('ar-LB') + ' ' +
+                    updateTime.toLocaleTimeString('ar-LB', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('pricesUpdate').textContent = `آخر تحديث: ${timeStr}`;
             }
         }
     } catch (e) {
-        console.log('Using Lebanese market prices');
+        console.log('Prices not available');
+        document.getElementById('pricesUpdate').textContent = 'غير متوفر';
     }
-
-    // Gold lira price is already set above (Lebanese market fixed price)
-    // Update DOM
-    document.getElementById('goldPrice').textContent = `$${goldPrice.toLocaleString()}`;
-    document.getElementById('goldLiraPrice').textContent = `$${Math.round(goldLiraPrice).toLocaleString()}`;
-    document.getElementById('silverPrice').textContent = `$${silverPrice.toFixed(2)}`;
-    document.getElementById('dollarPrice').textContent = `${dollarRate.toLocaleString()} ل.ل`;
-
-    // Update timestamp
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ar-LB', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('pricesUpdate').textContent = `آخر تحديث: ${timeStr}`;
 }
 
 // ===== Share Functions =====

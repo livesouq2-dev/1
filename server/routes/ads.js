@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Ad = require('../models/Ad');
 const User = require('../models/User');
+const Prices = require('../models/Prices');
 
 // Auth middleware
 const auth = async (req, res, next) => {
@@ -45,6 +46,22 @@ router.get('/stats', async (req, res) => {
         const totalAds = await Ad.countDocuments({ status: 'approved' });
         const totalUsers = await User.countDocuments({ isActive: true });
         res.json({ totalAds, totalUsers });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get current prices (public)
+router.get('/prices', async (req, res) => {
+    try {
+        const prices = await Prices.getPrices();
+        res.json({
+            goldOunce: prices.goldOunce,
+            goldLira: prices.goldLira,
+            silverOunce: prices.silverOunce,
+            dollarRate: prices.dollarRate,
+            updatedAt: prices.updatedAt
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

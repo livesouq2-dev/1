@@ -396,6 +396,7 @@
             <button class="tab-admin active" onclick="showTab('pending')">⏳ بانتظار الموافقة</button>
             <button class="tab-admin" onclick="showTab('ads')">📋 كل الإعلانات</button>
             <button class="tab-admin" onclick="showTab('users')">👥 المستخدمين</button>
+            <button class="tab-admin" onclick="showTab('prices')">💰 أسعار الذهب</button>
         </div>
 
         <!-- Pending Ads -->
@@ -451,6 +452,34 @@
                 </thead>
                 <tbody id="usersTable"></tbody>
             </table>
+        </div>
+
+        <!-- Prices Management -->
+        <div id="pricesTab" class="admin-section hidden">
+            <h3 class="section-title">💰 إدارة أسعار الذهب والفضة</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">عدّل الأسعار هنا وستظهر للزوار على الصفحة الرئيسية
+            </p>
+
+            <form id="pricesForm" style="max-width: 500px;">
+                <div class="form-group">
+                    <label>🥇 سعر أونصة الذهب (USD)</label>
+                    <input type="number" id="priceGoldOunce" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>🪙 سعر ليرة الذهب (USD)</label>
+                    <input type="number" id="priceGoldLira" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>🥈 سعر أونصة الفضة (USD)</label>
+                    <input type="number" id="priceSilverOunce" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>💵 سعر الدولار (ل.ل)</label>
+                    <input type="number" id="priceDollarRate" step="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">💾 حفظ الأسعار</button>
+            </form>
+            <p id="pricesLastUpdate" style="color: var(--text-muted); margin-top: 15px; font-size: 0.85rem;"></p>
         </div>
     </div>
 
@@ -727,11 +756,65 @@
             document.getElementById('pendingTab').classList.add('hidden');
             document.getElementById('adsTab').classList.add('hidden');
             document.getElementById('usersTab').classList.add('hidden');
+            document.getElementById('pricesTab').classList.add('hidden');
             document.getElementById(tab + 'Tab').classList.remove('hidden');
             if (tab === 'ads') loadAllAds();
             if (tab === 'users') loadUsers();
             if (tab === 'pending') loadPendingAds();
+            if (tab === 'prices') loadAdminPrices();
         }
+
+        // Load prices for admin form
+        async function loadAdminPrices() {
+            try {
+                const res = await fetch(`${API}/api/admin/prices`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const prices = await res.json();
+                    document.getElementById('priceGoldOunce').value = prices.goldOunce || '';
+                    document.getElementById('priceGoldLira').value = prices.goldLira || '';
+                    document.getElementById('priceSilverOunce').value = prices.silverOunce || '';
+                    document.getElementById('priceDollarRate').value = prices.dollarRate || '';
+                    if (prices.updatedAt) {
+                        const d = new Date(prices.updatedAt);
+                        document.getElementById('pricesLastUpdate').textContent =
+                            `آخر تحديث: ${d.toLocaleDateString('ar-LB')} - ${d.toLocaleTimeString('ar-LB')}`;
+                    }
+                }
+            } catch (e) {
+                console.log('Could not load prices');
+            }
+        }
+
+        // Save prices form
+        document.getElementById('pricesForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch(`${API}/api/admin/prices`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        goldOunce: parseFloat(document.getElementById('priceGoldOunce').value),
+                        goldLira: parseFloat(document.getElementById('priceGoldLira').value),
+                        silverOunce: parseFloat(document.getElementById('priceSilverOunce').value),
+                        dollarRate: parseFloat(document.getElementById('priceDollarRate').value)
+                    })
+                });
+                const data = await res.json();
+                if (data.prices) {
+                    alert('✅ ' + data.message);
+                    loadAdminPrices();
+                } else {
+                    alert('❌ خطأ: ' + data.message);
+                }
+            } catch (e) {
+                alert('❌ خطأ في حفظ الأسعار');
+            }
+        });
 
         function getCategoryName(cat) {
             const names = { home: '🏠 منزلية', cars: '🚗 سيارات', realestate: '🏗️ عقارات', services: '🔧 خدمات', jobs: '💼 وظائف' };
