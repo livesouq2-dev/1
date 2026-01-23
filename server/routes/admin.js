@@ -26,10 +26,24 @@ const adminAuth = async (req, res, next) => {
 // Get dashboard stats
 router.get('/stats', adminAuth, async (req, res) => {
     try {
+        const now = new Date();
+        const fiveMinAgo = new Date(now - 5 * 60 * 1000);
+        const oneHourAgo = new Date(now - 60 * 60 * 1000);
+        const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
+
         const totalUsers = await User.countDocuments();
-        const activeUsers = await User.countDocuments({
-            lastActive: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+
+        // Detailed active users breakdown
+        const activeNow = await User.countDocuments({
+            lastActive: { $gte: fiveMinAgo }
         });
+        const activeLastHour = await User.countDocuments({
+            lastActive: { $gte: oneHourAgo }
+        });
+        const activeToday = await User.countDocuments({
+            lastActive: { $gte: oneDayAgo }
+        });
+
         const totalAds = await Ad.countDocuments();
         const pendingAds = await Ad.countDocuments({ status: 'pending' });
         const approvedAds = await Ad.countDocuments({ status: 'approved' });
@@ -44,7 +58,10 @@ router.get('/stats', adminAuth, async (req, res) => {
         res.json({
             stats: {
                 totalUsers,
-                activeUsers,
+                activeNow,        // نشط الآن (آخر 5 دقائق)
+                activeLastHour,   // نشط آخر ساعة
+                activeToday,      // نشط اليوم (24 ساعة)
+                activeUsers: activeToday, // للتوافق مع الكود القديم
                 totalAds,
                 pendingAds,
                 approvedAds,

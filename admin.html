@@ -364,10 +364,20 @@
                 <div class="number" id="totalUsers">0</div>
                 <div class="label">إجمالي المستخدمين</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="border-left: 3px solid #22c55e;">
                 <div class="icon">🟢</div>
+                <div class="number" id="activeNow">0</div>
+                <div class="label">نشط الآن (5 دقائق)</div>
+            </div>
+            <div class="stat-card" style="border-left: 3px solid #3b82f6;">
+                <div class="icon">⏰</div>
+                <div class="number" id="activeLastHour">0</div>
+                <div class="label">نشط آخر ساعة</div>
+            </div>
+            <div class="stat-card" style="border-left: 3px solid #f59e0b;">
+                <div class="icon">📅</div>
                 <div class="number" id="activeUsers">0</div>
-                <div class="label">نشطين (24 ساعة)</div>
+                <div class="label">نشط اليوم (24 ساعة)</div>
             </div>
             <div class="stat-card">
                 <div class="icon">📋</div>
@@ -637,7 +647,9 @@
                 });
                 const { stats } = await res.json();
                 document.getElementById('totalUsers').textContent = stats.totalUsers;
-                document.getElementById('activeUsers').textContent = stats.activeUsers;
+                document.getElementById('activeNow').textContent = stats.activeNow || 0;
+                document.getElementById('activeLastHour').textContent = stats.activeLastHour || 0;
+                document.getElementById('activeUsers').textContent = stats.activeToday || stats.activeUsers || 0;
                 document.getElementById('totalAds').textContent = stats.totalAds;
                 document.getElementById('pendingAds').textContent = stats.pendingAds;
                 document.getElementById('approvedAds').textContent = stats.approvedAds;
