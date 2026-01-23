@@ -19,7 +19,7 @@ const rateLimitMiddleware = (req, res, next) => {
     const ip = req.ip || req.connection.remoteAddress;
     const now = Date.now();
     const windowMs = 15 * 60 * 1000; // 15 minutes
-    const maxRequests = 100; // max 100 requests per 15 min
+    const maxRequests = 500; // max 500 requests per 15 min
 
     if (!rateLimit[ip]) {
         rateLimit[ip] = { count: 1, startTime: now };
