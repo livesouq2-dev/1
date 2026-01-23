@@ -35,10 +35,12 @@ async function loadStats() {
 
 // ===== Load Gold, Silver & Dollar Prices =====
 async function loadPrices() {
-    // Current 2026 prices (updated regularly)
-    let goldPrice = 4900;   // USD per ounce
-    let silverPrice = 58;    // USD per ounce
-    const dollarRate = 89500; // Lebanese Lira per USD
+    // Lebanese Market Prices (January 2026)
+    // Updated manually - for accurate prices contact gold dealers
+    let goldPrice = 5400;      // USD per ounce (أونصة الذهب)
+    let silverPrice = 98;       // USD per ounce (أونصة الفضة)
+    let goldLiraPrice = 1070;   // USD per gold lira (ليرة الذهب الرشادي)
+    const dollarRate = 89500;   // Lebanese Lira per USD
 
     try {
         // Try to fetch live prices from metals.live API
@@ -55,13 +57,10 @@ async function loadPrices() {
             }
         }
     } catch (e) {
-        console.log('Using fallback prices');
+        console.log('Using Lebanese market prices');
     }
 
-    // Calculate gold lira price (approximately 7.32 grams of 21K gold)
-    const goldGramPrice = goldPrice / 31.1035; // troy ounce to gram
-    const goldLiraPrice = goldGramPrice * 7.32 * 0.875; // 21K = 87.5% pure gold
-
+    // Gold lira price is already set above (Lebanese market fixed price)
     // Update DOM
     document.getElementById('goldPrice').textContent = `$${goldPrice.toLocaleString()}`;
     document.getElementById('goldLiraPrice').textContent = `$${Math.round(goldLiraPrice).toLocaleString()}`;
