@@ -33,6 +33,49 @@ async function loadStats() {
     }
 }
 
+// ===== Load Gold, Silver & Dollar Prices =====
+async function loadPrices() {
+    try {
+        // Gold and Silver prices from metals.live API (free, no API key needed)
+        const metalsRes = await fetch('https://api.metals.live/v1/spot');
+        const metalsData = await metalsRes.json();
+
+        // Find gold and silver prices
+        const goldData = metalsData.find(m => m.gold);
+        const silverData = metalsData.find(m => m.silver);
+
+        const goldPrice = goldData ? goldData.gold : 2650; // fallback price
+        const silverPrice = silverData ? silverData.silver : 30; // fallback price
+
+        // Calculate gold lira price (approximately 7.32 grams of gold)
+        const goldGramPrice = goldPrice / 31.1035; // troy ounce to gram
+        const goldLiraPrice = goldGramPrice * 7.32; // 21K gold lira weight
+
+        // Lebanon dollar rate (using a fallback since APIs are limited)
+        const dollarRate = 89500; // Lebanese Lira per USD (update manually or use API)
+
+        // Update DOM
+        document.getElementById('goldPrice').textContent = `$${goldPrice.toLocaleString()}`;
+        document.getElementById('goldLiraPrice').textContent = `$${Math.round(goldLiraPrice).toLocaleString()}`;
+        document.getElementById('silverPrice').textContent = `$${silverPrice.toFixed(2)}`;
+        document.getElementById('dollarPrice').textContent = `${dollarRate.toLocaleString()} ل.ل`;
+
+        // Update timestamp
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ar-LB', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('pricesUpdate').textContent = `آخر تحديث: ${timeStr}`;
+
+    } catch (e) {
+        console.error('Failed to load prices:', e);
+        // Show fallback prices
+        document.getElementById('goldPrice').textContent = '$2,650';
+        document.getElementById('goldLiraPrice').textContent = '$625';
+        document.getElementById('silverPrice').textContent = '$30.50';
+        document.getElementById('dollarPrice').textContent = '89,500 ل.ل';
+        document.getElementById('pricesUpdate').textContent = 'أسعار تقريبية';
+    }
+}
+
 // ===== Share Functions =====
 function shareWhatsApp(title, url) {
     const text = encodeURIComponent(`شاهد هذا الإعلان: ${title}\n${url}`);
@@ -366,6 +409,7 @@ const tabs = document.querySelectorAll('.tab');
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     loadAds();
+    loadPrices(); // Load gold, silver & dollar prices
     setupEventListeners();
 });
 
