@@ -712,16 +712,40 @@
                 });
                 const { users } = await res.json();
                 const tbody = document.getElementById('usersTable');
-                tbody.innerHTML = users.map(u => `
+                const now = Date.now();
+
+                tbody.innerHTML = users.map(u => {
+                    const lastActive = new Date(u.lastActive).getTime();
+                    const minutesAgo = (now - lastActive) / (1000 * 60);
+
+                    // Determine online status
+                    let statusDot, statusText;
+                    if (minutesAgo <= 5) {
+                        statusDot = '🟢';
+                        statusText = 'متصل الآن';
+                    } else if (minutesAgo <= 60) {
+                        statusDot = '🟡';
+                        statusText = `نشط منذ ${Math.round(minutesAgo)} دقيقة`;
+                    } else if (minutesAgo <= 1440) {
+                        const hoursAgo = Math.round(minutesAgo / 60);
+                        statusDot = '🟠';
+                        statusText = `نشط منذ ${hoursAgo} ساعة`;
+                    } else {
+                        statusDot = '⚫';
+                        statusText = 'غير متصل';
+                    }
+
+                    return `
                     <tr>
-                        <td>${u.name}</td>
+                        <td>${statusDot} ${u.name} <small style="color: var(--text-muted);">(${statusText})</small></td>
                         <td>${u.email}</td>
                         <td style="direction:ltr">${u.phone || '-'}</td>
                         <td>${u.role === 'admin' ? '🔧 مشرف' : '👤 مستخدم'}</td>
                         <td>${new Date(u.lastActive).toLocaleDateString('ar')}</td>
                         <td>${u.role !== 'admin' ? `<button class="action-btn btn-delete" onclick="deleteUser('${u._id}')">🗑️</button>` : ''}</td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
             } catch (e) { console.error(e); }
         }
 
