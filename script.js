@@ -83,6 +83,63 @@ function copyLink(url) {
     });
 }
 
+// ===== Image Compression Function =====
+// Compresses image to max 800x800 and 70% quality to save MongoDB storage
+async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Calculate new dimensions
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to base64 with compression
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedBase64);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// ===== Handle Multiple Images Preview =====
+document.getElementById('adImages')?.addEventListener('change', async function (e) {
+    const files = Array.from(e.target.files).slice(0, 4); // Max 4 images
+    const preview = document.getElementById('imagesPreview');
+    preview.innerHTML = '';
+
+    for (const file of files) {
+        const compressed = await compressImage(file);
+        const img = document.createElement('img');
+        img.src = compressed;
+        img.style.cssText = 'width: 100%; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--glass-border);';
+        preview.appendChild(img);
+    }
+});
+
 // ===== Toggle Job Fields =====
 function toggleJobFields() {
     const category = document.getElementById('adCategory')?.value;
@@ -743,11 +800,15 @@ function setupEventListeners() {
     document.getElementById('adForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Get image as compressed base64 if file selected
-        let imageBase64 = '';
-        const imageFile = document.getElementById('adImage').files[0];
-        if (imageFile) {
-            imageBase64 = await compressImage(imageFile);
+        // Get up to 4 images as compressed base64
+        let imagesBase64 = [];
+        const imageFiles = document.getElementById('adImages')?.files;
+        if (imageFiles && imageFiles.length > 0) {
+            const filesToProcess = Array.from(imageFiles).slice(0, 4); // Max 4 images
+            for (const file of filesToProcess) {
+                const compressed = await compressImage(file);
+                imagesBase64.push(compressed);
+            }
         }
 
         const category = document.getElementById('adCategory').value;
@@ -759,7 +820,7 @@ function setupEventListeners() {
             price: document.getElementById('adPrice').value,
             location: document.getElementById('adLocation').value,
             whatsapp: document.getElementById('adWhatsapp').value,
-            images: imageBase64 ? [imageBase64] : [],
+            images: imagesBase64,
             description: document.getElementById('adDescription').value
         };
 

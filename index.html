@@ -537,11 +537,12 @@
                 <div class="form-group"><label>📱 رقم الواتساب</label><input type="tel" id="adWhatsapp"
                         placeholder="مثال: 96171123456" required></div>
                 <div class="form-group">
-                    <label>🖼️ صورة الإعلان</label>
-                    <input type="file" id="adImage" accept="image/*" style="padding: 10px;">
-                    <div id="imagePreview" style="margin-top: 10px; display: none;">
-                        <img id="previewImg" style="max-width: 100%; max-height: 150px; border-radius: 8px;">
-                    </div>
+                    <label>🖼️ صور الإعلان (حتى 4 صور)</label>
+                    <input type="file" id="adImages" accept="image/*" multiple style="padding: 10px;">
+                    <small style="color: var(--text-muted); display: block; margin-top: 5px;">📦 يتم ضغط الصور تلقائياً
+                        لتوفير المساحة</small>
+                    <div id="imagesPreview"
+                        style="margin-top: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
                 </div>
                 <div class="form-group"><label id="descLabel">الوصف</label><textarea id="adDescription" rows="2"
                         placeholder="أضف تفاصيل عن منتجك..." required></textarea></div>
