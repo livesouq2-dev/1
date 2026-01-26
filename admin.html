@@ -403,10 +403,10 @@
 
         <!-- Tabs -->
         <div class="tabs-admin">
-            <button class="tab-admin active" onclick="showTab('pending')">⏳ بانتظار الموافقة</button>
-            <button class="tab-admin" onclick="showTab('ads')">📋 كل الإعلانات</button>
-            <button class="tab-admin" onclick="showTab('users')">👥 المستخدمين</button>
-            <button class="tab-admin" onclick="showTab('prices')">💰 أسعار الذهب</button>
+            <button class="tab-admin active" onclick="showTab('pending', this)">⏳ بانتظار الموافقة</button>
+            <button class="tab-admin" onclick="showTab('ads', this)">📋 كل الإعلانات</button>
+            <button class="tab-admin" onclick="showTab('users', this)">👥 المستخدمين</button>
+            <button class="tab-admin" onclick="showTab('prices', this)">💰 أسعار الذهب</button>
         </div>
 
         <!-- Pending Ads -->
@@ -786,9 +786,9 @@
             loadStats(); loadUsers();
         }
 
-        function showTab(tab) {
+        function showTab(tab, btn) {
             document.querySelectorAll('.tab-admin').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (btn) btn.classList.add('active');
             document.getElementById('pendingTab').classList.add('hidden');
             document.getElementById('adsTab').classList.add('hidden');
             document.getElementById('usersTab').classList.add('hidden');
