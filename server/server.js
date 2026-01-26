@@ -3,6 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const hpp = require('hpp');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -13,53 +17,106 @@ const app = express();
 
 // ===== SECURITY MIDDLEWARE =====
 
-// 1. Rate Limiting - Prevent brute force attacks
-const rateLimit = {};
-const rateLimitMiddleware = (req, res, next) => {
-    const ip = req.ip || req.connection.remoteAddress;
-    const now = Date.now();
-    const windowMs = 15 * 60 * 1000; // 15 minutes
-    const maxRequests = 500; // max 500 requests per 15 min
-
-    if (!rateLimit[ip]) {
-        rateLimit[ip] = { count: 1, startTime: now };
-    } else if (now - rateLimit[ip].startTime > windowMs) {
-        rateLimit[ip] = { count: 1, startTime: now };
-    } else {
-        rateLimit[ip].count++;
-        if (rateLimit[ip].count > maxRequests) {
-            return res.status(429).json({ message: 'كثرة الطلبات، حاول لاحقاً' });
+// 1. Helmet - Security HTTP Headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://pagead2.googlesyndication.com"],
+            imgSrc: ["'self'", "data:", "blob:", "https:"],
+            connectSrc: ["'self'", "https:"],
+            frameSrc: ["'self'", "https://pagead2.googlesyndication.com"],
         }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// 2. Rate Limiting - General API protection
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 300, // 300 requests per 15 min
+    message: { message: 'كثرة الطلبات، حاول لاحقاً' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// 3. Strict Rate Limiting for Auth routes (prevent brute force)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Only 10 login attempts per 15 min
+    message: { message: 'كثرة محاولات تسجيل الدخول، انتظر 15 دقيقة' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true // Don't count successful logins
+});
+
+// 4. Very Strict Limiter for Admin Setup (prevent abuse)
+const setupLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // Only 3 attempts per hour
+    message: { message: 'تم حظر هذا الإجراء مؤقتاً' }
+});
+
+// Apply general rate limiting
+app.use('/api/', generalLimiter);
+
+// Apply strict rate limiting to auth routes
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/admin/setup', setupLimiter);
+
+// 5. CORS Configuration (Secure)
+const allowedOrigins = process.env.NODE_ENV === 'production'
+    ? ['https://badel-w-bi3.onrender.com', 'https://w-bi3.onrender.com']
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, etc)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 86400 // Cache preflight for 24 hours
+}));
+
+// 6. Body Parser with size limit (prevent large payload attacks)
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// 7. MongoDB Injection Prevention
+app.use(mongoSanitize({
+    replaceWith: '_',
+    onSanitize: ({ req, key }) => {
+        console.warn(`⚠️ محاولة NoSQL Injection محظورة من: ${req.ip}`);
     }
-    next();
-};
+}));
 
-// 2. Security Headers
-const securityHeaders = (req, res, next) => {
-    // Prevent clickjacking
-    res.setHeader('X-Frame-Options', 'DENY');
-    // Prevent XSS attacks
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    // Prevent MIME sniffing
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    // Referrer policy
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    // Content Security Policy
-    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https:;");
-    // Remove server info
-    res.removeHeader('X-Powered-By');
-    next();
-};
+// 8. HTTP Parameter Pollution Prevention
+app.use(hpp({
+    whitelist: ['category', 'status'] // Allow duplicate params for these
+}));
 
-// 3. Input Sanitization
+// 9. Input Sanitization (XSS Prevention)
 const sanitizeInput = (req, res, next) => {
     const sanitize = (obj) => {
         for (let key in obj) {
             if (typeof obj[key] === 'string') {
                 // Remove potential XSS scripts
-                obj[key] = obj[key].replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-                // Remove MongoDB injection attempts
-                obj[key] = obj[key].replace(/\$|\{|\}/g, '');
+                obj[key] = obj[key]
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .replace(/javascript:/gi, '')
+                    .replace(/on\w+\s*=/gi, '')
+                    .replace(/data:/gi, 'data_blocked:');
             } else if (typeof obj[key] === 'object' && obj[key] !== null) {
                 sanitize(obj[key]);
             }
@@ -71,24 +128,20 @@ const sanitizeInput = (req, res, next) => {
     next();
 };
 
-// Apply Security Middleware
-app.use(rateLimitMiddleware);
-app.use(securityHeaders);
-
-// CORS Configuration (Secure)
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? ['https://badel-w-bi3.onrender.com', 'https://w-bi3.onrender.com']
-        : '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}));
-
-// Body Parser with size limit (prevent large payload attacks)
-app.use(express.json({ limit: '5mb' }));
 app.use(sanitizeInput);
-app.use(express.static(path.join(__dirname, '..')));
+
+// 10. Remove X-Powered-By header
+app.disable('x-powered-by');
+
+// Serve static files
+app.use(express.static(path.join(__dirname, '..'), {
+    setHeaders: (res, path) => {
+        // Cache static assets
+        if (path.endsWith('.css') || path.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000');
+        }
+    }
+}));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -104,15 +157,41 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'admin.html'));
 });
 
-// MongoDB Connection - Note: special characters in password need URL encoding
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://livesouq2_db_user:olleikmom313@cluster0.n1jewbg.mongodb.net/badel-w-bi3?retryWrites=true&w=majority&appName=Cluster0';
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ message: 'الصفحة غير موجودة' });
+});
 
-mongoose.connect(MONGODB_URI)
+// Error Handler (Don't leak error details in production)
+app.use((err, req, res, next) => {
+    console.error('❌ خطأ:', err.message);
+    res.status(err.status || 500).json({
+        message: process.env.NODE_ENV === 'production'
+            ? 'حدث خطأ في الخادم'
+            : err.message
+    });
+});
+
+// MongoDB Connection - ONLY from environment variables
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+    console.error('❌ خطأ: يجب تعريف MONGODB_URI في ملف .env');
+    console.log('📝 أنشئ ملف .env وأضف: MONGODB_URI=your_connection_string');
+    process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI, {
+    // Security options
+    retryWrites: true,
+    w: 'majority'
+})
     .then(() => {
-        console.log('✅ تم الاتصال بقاعدة البيانات MongoDB');
+        console.log('✅ تم الاتصال بقاعدة البيانات MongoDB بشكل آمن');
     })
     .catch((err) => {
         console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err.message);
+        process.exit(1);
     });
 
 // Start server
@@ -121,9 +200,10 @@ app.listen(PORT, () => {
     console.log(`
 🛒 بدّل وبيع - Badel w Bi3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔒 الوضع: ${process.env.NODE_ENV === 'production' ? 'إنتاج (محمي)' : 'تطوير'}
 🌐 الموقع: http://localhost:${PORT}
 🔧 لوحة التحكم: http://localhost:${PORT}/admin
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-📞 المشرف: +961 71 163 211
+🛡️ الحماية: Helmet ✓ | Rate Limit ✓ | NoSQL Sanitize ✓
     `);
 });

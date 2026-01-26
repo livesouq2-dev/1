@@ -189,20 +189,43 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
     }
 });
 
-// Create admin (first time setup)
+// Create admin (first time setup) - SECURED
 router.post('/setup', async (req, res) => {
     try {
+        // Check if any admin already exists
         const adminExists = await User.findOne({ role: 'admin' });
         if (adminExists) {
-            return res.status(400).json({ message: 'يوجد مشرف مسبقاً' });
+            return res.status(400).json({ message: 'يوجد مشرف مسبقاً - لا يمكن إنشاء حساب جديد' });
         }
+
+        // Generate a random secure password
+        const generateSecurePassword = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        };
+
+        const securePassword = generateSecurePassword();
+
         const admin = await User.create({
             name: 'المشرف',
             email: 'admin@badel.com',
-            password: 'admin123',
+            password: securePassword,
             role: 'admin'
         });
-        res.json({ message: 'تم إنشاء حساب المشرف', email: 'admin@badel.com', password: 'admin123' });
+
+        // Log password creation (for initial setup only)
+        console.log('⚠️ تم إنشاء حساب المشرف - غيّر كلمة المرور فوراً!');
+
+        res.json({
+            message: 'تم إنشاء حساب المشرف بنجاح! غيّر كلمة المرور فوراً!',
+            email: 'admin@badel.com',
+            password: securePassword,
+            warning: '⚠️ احفظ كلمة المرور الآن - لن تظهر مرة أخرى!'
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
