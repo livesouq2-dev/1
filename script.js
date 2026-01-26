@@ -83,6 +83,35 @@ function copyLink(url) {
     });
 }
 
+// ===== Image Gallery Navigation Functions =====
+function changeGalleryImage(direction) {
+    if (!window.galleryImages) return;
+    window.galleryCurrentIndex += direction;
+
+    // Loop around
+    if (window.galleryCurrentIndex >= window.galleryImages.length) {
+        window.galleryCurrentIndex = 0;
+    } else if (window.galleryCurrentIndex < 0) {
+        window.galleryCurrentIndex = window.galleryImages.length - 1;
+    }
+
+    setGalleryImage(window.galleryCurrentIndex);
+}
+
+function setGalleryImage(index) {
+    if (!window.galleryImages || !window.galleryImages[index]) return;
+    window.galleryCurrentIndex = index;
+
+    // Update main image
+    document.getElementById('galleryMainImg').src = window.galleryImages[index];
+    document.getElementById('galleryIndex').textContent = index + 1;
+
+    // Update thumbnail active state
+    document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === index);
+    });
+}
+
 // ===== Image Compression Function =====
 // Compresses image to max 800x800 and 70% quality to save MongoDB storage
 async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
@@ -330,9 +359,37 @@ function showAdDetail(adId) {
         'any': 'غير محدد'
     };
 
+    // Build image gallery HTML
+    let imagesHTML = '';
+    if (ad.images && ad.images.length > 0) {
+        if (ad.images.length === 1) {
+            imagesHTML = `<img src="${ad.images[0]}" alt="${ad.title}" class="ad-detail-img">`;
+        } else {
+            // Multiple images - create gallery with navigation
+            imagesHTML = `
+                <div class="ad-gallery" id="adGallery">
+                    <div class="gallery-main">
+                        <img src="${ad.images[0]}" alt="${ad.title}" class="ad-detail-img" id="galleryMainImg">
+                        <button class="gallery-nav gallery-prev" onclick="changeGalleryImage(-1)">❮</button>
+                        <button class="gallery-nav gallery-next" onclick="changeGalleryImage(1)">❯</button>
+                        <div class="gallery-counter"><span id="galleryIndex">1</span>/${ad.images.length}</div>
+                    </div>
+                    <div class="gallery-thumbs">
+                        ${ad.images.map((img, i) => `
+                            <img src="${img}" alt="صورة ${i + 1}" class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="setGalleryImage(${i})">
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            // Store images globally for navigation
+            window.galleryImages = ad.images;
+            window.galleryCurrentIndex = 0;
+        }
+    }
+
     let detailHTML = `
         <div class="ad-detail">
-            ${ad.images && ad.images[0] ? `<img src="${ad.images[0]}" alt="${ad.title}" class="ad-detail-img">` : ''}
+            ${imagesHTML}
             <div class="ad-detail-header">
                 <span class="ad-detail-category">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
                 ${ad.isFeatured ? '<span class="badge gold">⭐ مميز</span>' : ''}
