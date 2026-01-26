@@ -616,14 +616,27 @@
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                if (data.token && data.user.role === 'admin') {
+                console.log('Login response:', data); // Debug log
+
+                // Check if login was successful
+                if (!res.ok) {
+                    alert('❌ ' + (data.message || 'خطأ في تسجيل الدخول'));
+                    return;
+                }
+
+                if (data.token && data.user && data.user.role === 'admin') {
                     token = data.token;
                     localStorage.setItem('adminToken', token);
                     showDashboard(data.user);
+                } else if (data.user && data.user.role !== 'admin') {
+                    alert('❌ هذا الحساب ليس حساب مشرف');
                 } else {
-                    alert('❌ غير مصرح - للمشرفين فقط');
+                    alert('❌ خطأ: ' + JSON.stringify(data));
                 }
-            } catch (e) { alert('خطأ في الاتصال'); }
+            } catch (err) {
+                console.error('Login error:', err);
+                alert('خطأ في الاتصال: ' + err.message);
+            }
         });
 
         async function setupAdmin() {

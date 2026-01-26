@@ -68,18 +68,24 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/admin/setup', setupLimiter);
 
-// 5. CORS Configuration (Secure)
-const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? ['https://badel-w-bi3.onrender.com', 'https://w-bi3.onrender.com']
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+// 5. CORS Configuration (Secure but allows same-origin)
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'https://badel-w-bi3.onrender.com',
+    'https://w-bi3.onrender.com'
+];
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, curl, etc)
+        // Allow requests with no origin (same-origin, mobile apps, curl, etc)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+        if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.log('Blocked origin:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
