@@ -25,6 +25,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://pagead2.googlesyndication.com"],
+            scriptSrcAttr: ["'unsafe-inline'"], // Allow onclick handlers in HTML
             imgSrc: ["'self'", "data:", "blob:", "https:"],
             connectSrc: ["'self'", "https:"],
             frameSrc: ["'self'", "https://pagead2.googlesyndication.com"],
@@ -141,10 +142,16 @@ app.disable('x-powered-by');
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..'), {
-    setHeaders: (res, path) => {
-        // Cache static assets
-        if (path.endsWith('.css') || path.endsWith('.js')) {
-            res.setHeader('Cache-Control', 'public, max-age=31536000');
+    setHeaders: (res, filepath) => {
+        // No cache for HTML files (always fresh)
+        if (filepath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+        // Cache static assets like CSS/JS
+        else if (filepath.endsWith('.css') || filepath.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour instead of 1 year
         }
     }
 }));
