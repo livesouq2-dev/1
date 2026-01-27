@@ -132,12 +132,16 @@ const sanitizeInput = (req, res, next) => {
     const sanitize = (obj) => {
         for (let key in obj) {
             if (typeof obj[key] === 'string') {
+                // Skip sanitization for image data URLs (base64 images)
+                if (obj[key].startsWith('data:image/')) {
+                    continue; // Allow base64 images
+                }
                 // Remove potential XSS scripts
                 obj[key] = obj[key]
                     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                     .replace(/javascript:/gi, '')
                     .replace(/on\w+\s*=/gi, '')
-                    .replace(/data:/gi, 'data_blocked:');
+                    .replace(/data:(?!image\/)/gi, 'data_blocked:'); // Block non-image data URLs
             } else if (typeof obj[key] === 'object' && obj[key] !== null) {
                 sanitize(obj[key]);
             }
