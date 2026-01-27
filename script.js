@@ -860,12 +860,29 @@ function setupEventListeners() {
         // Get up to 4 images as compressed base64
         let imagesBase64 = [];
         const imageFiles = document.getElementById('adImages')?.files;
+
+        // DEBUG: Log image file info
+        console.log('📷 Image files selected:', imageFiles ? imageFiles.length : 0);
+
         if (imageFiles && imageFiles.length > 0) {
             const filesToProcess = Array.from(imageFiles).slice(0, 4); // Max 4 images
+            console.log('📷 Processing', filesToProcess.length, 'files');
+
             for (const file of filesToProcess) {
-                const compressed = await compressImage(file);
-                imagesBase64.push(compressed);
+                console.log('📷 Compressing:', file.name, 'Size:', file.size);
+                try {
+                    const compressed = await compressImage(file);
+                    console.log('📷 Compressed to:', compressed ? compressed.length : 0, 'chars');
+                    imagesBase64.push(compressed);
+                } catch (err) {
+                    console.error('❌ Compression error:', err);
+                }
             }
+        }
+
+        console.log('📷 Total images to send:', imagesBase64.length);
+        if (imagesBase64.length > 0) {
+            console.log('📷 First image preview:', imagesBase64[0].substring(0, 100) + '...');
         }
 
         const category = document.getElementById('adCategory').value;
@@ -880,6 +897,8 @@ function setupEventListeners() {
             images: imagesBase64,
             description: document.getElementById('adDescription').value
         };
+
+        console.log('📤 Sending ad with', adData.images.length, 'images');
 
         // Add job-specific fields if category is jobs
         if (category === 'jobs') {
