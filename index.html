@@ -474,7 +474,7 @@
                 <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="regEmail" required>
                 </div>
                 <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="regPhone"
-                        placeholder="+961 XX XXX XXX"></div>
+                        placeholder="+961 XX XXX XXX" required></div>
                 <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" minlength="6"
                         required></div>
                 <button type="submit" class="btn btn-primary" style="width:100%">إنشاء حساب</button>
@@ -540,8 +540,8 @@
                 <div class="form-group"><label>📱 رقم الواتساب</label><input type="tel" id="adWhatsapp"
                         placeholder="مثال: 96171123456" required></div>
                 <div class="form-group">
-                    <label>🖼️ صور الإعلان (حتى 4 صور)</label>
-                    <input type="file" id="adImages" accept="image/*" multiple style="padding: 10px;">
+                    <label>🖼️ صور الإعلان (حتى 4 صور) <span style="color: #ff6b6b;">*</span></label>
+                    <input type="file" id="adImages" accept="image/*" multiple style="padding: 10px;" required>
                     <small style="color: var(--text-muted); display: block; margin-top: 5px;">📦 يتم ضغط الصور تلقائياً
                         لتوفير المساحة</small>
                     <div id="imagesPreview"
