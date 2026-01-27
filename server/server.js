@@ -76,7 +76,9 @@ const allowedOrigins = [
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001',
     'https://badel-w-bi3.onrender.com',
-    'https://w-bi3.onrender.com'
+    'https://w-bi3.onrender.com',
+    'https://badelwbi3.com',
+    'https://www.badelwbi3.com'
 ];
 
 app.use(cors({
