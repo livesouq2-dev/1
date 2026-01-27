@@ -190,6 +190,7 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
 });
 
 // Create admin (first time setup) - SECURED
+// Admin credentials are stored in environment variables
 router.post('/setup', async (req, res) => {
     try {
         // Check if any admin already exists
@@ -198,33 +199,28 @@ router.post('/setup', async (req, res) => {
             return res.status(400).json({ message: 'يوجد مشرف مسبقاً - لا يمكن إنشاء حساب جديد' });
         }
 
-        // Generate a random secure password
-        const generateSecurePassword = () => {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
-            let password = '';
-            for (let i = 0; i < 12; i++) {
-                password += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return password;
-        };
+        // Get admin credentials from environment variables
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@badel.com';
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
-        const securePassword = generateSecurePassword();
+        if (!adminPassword) {
+            console.error('❌ ADMIN_PASSWORD not set in environment variables');
+            return res.status(500).json({ message: 'خطأ في تكوين النظام - تواصل مع المطور' });
+        }
 
         const admin = await User.create({
             name: 'المشرف',
-            email: 'admin@badel.com',
-            password: securePassword,
+            email: adminEmail.toLowerCase(),
+            password: adminPassword,
             role: 'admin'
         });
 
-        // Log password creation (for initial setup only)
-        console.log('⚠️ تم إنشاء حساب المشرف - غيّر كلمة المرور فوراً!');
+        console.log('✅ تم إنشاء حساب المشرف بنجاح:', adminEmail);
 
         res.json({
-            message: 'تم إنشاء حساب المشرف بنجاح! غيّر كلمة المرور فوراً!',
-            email: 'admin@badel.com',
-            password: securePassword,
-            warning: '⚠️ احفظ كلمة المرور الآن - لن تظهر مرة أخرى!'
+            message: 'تم إنشاء حساب المشرف بنجاح!',
+            email: adminEmail
+            // Password NOT returned for security
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
