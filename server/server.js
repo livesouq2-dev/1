@@ -98,6 +98,18 @@ app.use(cors({
     maxAge: 86400 // Cache preflight for 24 hours
 }));
 
+// 5.5 Redirect old domain to new domain (301 Permanent Redirect for SEO)
+app.use((req, res, next) => {
+    const host = req.get('host');
+    // Redirect from old onrender.com domain to new custom domain
+    if (host && (host.includes('onrender.com') || host.includes('w-bi3.onrender.com'))) {
+        const newUrl = `https://badelwbi3.com${req.originalUrl}`;
+        console.log(`🔄 Redirecting from ${host} to badelwbi3.com`);
+        return res.redirect(301, newUrl);
+    }
+    next();
+});
+
 // 6. Body Parser with size limit (prevent large payload attacks)
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
