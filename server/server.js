@@ -110,9 +110,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// 6. Body Parser with size limit (prevent large payload attacks)
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+// 6. Body Parser with size limit (allow multiple base64 images)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 7. MongoDB Injection Prevention
 app.use(mongoSanitize({

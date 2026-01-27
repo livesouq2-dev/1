@@ -82,6 +82,14 @@ router.post('/', auth, async (req, res) => {
     try {
         const { title, description, category, subCategory, price, location, whatsapp, images, jobType, jobExperience } = req.body;
 
+        // Debug: Log image info
+        console.log('📸 Images received:', images ? images.length : 0);
+        if (images && images.length > 0) {
+            images.forEach((img, i) => {
+                console.log(`  Image ${i + 1}: ${img ? img.substring(0, 50) + '...' : 'null'} (length: ${img ? img.length : 0})`);
+            });
+        }
+
         const adData = {
             title,
             description,
