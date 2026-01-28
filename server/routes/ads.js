@@ -33,9 +33,8 @@ router.get('/', async (req, res) => {
         }
 
         // Use lean() for faster queries (returns plain JS objects)
-        // Select only needed fields (exclude full images for list view)
         const ads = await Ad.find(query)
-            .select('title category subCategory price location isFeatured createdAt images user')
+            .select('title description category subCategory price location whatsapp isFeatured createdAt images user jobType jobExperience')
             .populate('user', 'name')
             .sort({ isFeatured: -1, createdAt: -1 })
             .limit(parseInt(limit))
