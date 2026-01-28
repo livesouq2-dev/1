@@ -37,15 +37,7 @@ app.use(helmet({
 }));
 
 // 1.5 Compression - Reduce response size for faster loading
-app.use(compression({
-    level: 6, // Compression level (1-9, 6 is good balance)
-    threshold: 1024, // Only compress responses > 1KB
-    filter: (req, res) => {
-        // Don't compress if client doesn't accept it
-        if (req.headers['x-no-compression']) return false;
-        return compression.filter(req, res);
-    }
-}));
+app.use(compression());
 
 // 2. Rate Limiting - General API protection
 const generalLimiter = rateLimit({
