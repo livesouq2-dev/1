@@ -72,8 +72,10 @@ const adSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for faster queries
+// Indexes for faster queries
 adSchema.index({ category: 1, status: 1 });
 adSchema.index({ user: 1 });
+adSchema.index({ status: 1, isFeatured: -1, createdAt: -1 }); // For sorting approved ads
+adSchema.index({ createdAt: -1 }); // For date sorting
 
 module.exports = mongoose.model('Ad', adSchema);

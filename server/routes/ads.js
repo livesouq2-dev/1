@@ -23,17 +23,25 @@ const auth = async (req, res, next) => {
     }
 };
 
-// Get all approved ads (public)
+// Get all approved ads (public) - OPTIMIZED
 router.get('/', async (req, res) => {
     try {
-        const { category } = req.query;
+        const { category, page = 1, limit = 50 } = req.query;
         const query = { status: 'approved' };
         if (category && category !== 'all') {
             query.category = category;
         }
+
+        // Use lean() for faster queries (returns plain JS objects)
+        // Select only needed fields (exclude full images for list view)
         const ads = await Ad.find(query)
+            .select('title category subCategory price location isFeatured createdAt images user')
             .populate('user', 'name')
-            .sort({ isFeatured: -1, createdAt: -1 });
+            .sort({ isFeatured: -1, createdAt: -1 })
+            .limit(parseInt(limit))
+            .skip((parseInt(page) - 1) * parseInt(limit))
+            .lean();
+
         res.json({ ads });
     } catch (error) {
         res.status(500).json({ message: error.message });

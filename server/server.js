@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
+const compression = require('compression');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -33,6 +34,17 @@ app.use(helmet({
     },
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// 1.5 Compression - Reduce response size for faster loading
+app.use(compression({
+    level: 6, // Compression level (1-9, 6 is good balance)
+    threshold: 1024, // Only compress responses > 1KB
+    filter: (req, res) => {
+        // Don't compress if client doesn't accept it
+        if (req.headers['x-no-compression']) return false;
+        return compression.filter(req, res);
+    }
 }));
 
 // 2. Rate Limiting - General API protection
