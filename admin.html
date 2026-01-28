@@ -437,6 +437,7 @@
                         <th>العنوان</th>
                         <th>الفئة</th>
                         <th>السعر</th>
+                        <th>📱 نقرات</th>
                         <th>الحالة</th>
                         <th>المستخدم</th>
                         <th>إجراءات</th>
@@ -707,6 +708,7 @@
                         <td>${ad.isFeatured ? '⭐ ' : ''}${ad.title}</td>
                         <td>${getCategoryName(ad.category)}</td>
                         <td>${ad.price}</td>
+                        <td style="text-align:center;font-weight:bold;color:#22c55e">${ad.whatsappClicks || 0}</td>
                         <td><span class="status-badge status-${ad.status}">${getStatusName(ad.status)}</span></td>
                         <td>${ad.user?.name || '-'}</td>
                         <td>
@@ -714,7 +716,7 @@
                             <button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button>
                         </td>
                     </tr>
-                `).join('') : '<tr><td colspan="6" class="empty-state">لا توجد إعلانات</td></tr>';
+                `).join('') : '<tr><td colspan="7" class="empty-state">لا توجد إعلانات</td></tr>';
             } catch (e) { console.error(e); }
         }
 
