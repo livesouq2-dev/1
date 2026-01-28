@@ -74,6 +74,23 @@ router.get('/prices', async (req, res) => {
     }
 });
 
+// Track WhatsApp click (public) - for analytics
+router.post('/:id/whatsapp-click', async (req, res) => {
+    try {
+        const ad = await Ad.findByIdAndUpdate(
+            req.params.id,
+            { $inc: { whatsappClicks: 1 } },
+            { new: true }
+        );
+        if (!ad) {
+            return res.status(404).json({ message: 'الإعلان غير موجود' });
+        }
+        res.json({ success: true, clicks: ad.whatsappClicks });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get user's ads
 router.get('/my-ads', auth, async (req, res) => {
     try {

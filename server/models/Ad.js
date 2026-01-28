@@ -67,6 +67,10 @@ const adSchema = new mongoose.Schema({
     views: {
         type: Number,
         default: 0
+    },
+    whatsappClicks: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

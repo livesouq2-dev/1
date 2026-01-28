@@ -19,6 +19,15 @@ function toggleTheme() {
     if (themeBtn) themeBtn.textContent = newTheme === 'dark' ? '🌙' : '☀️';
 }
 
+// ===== Track WhatsApp Click =====
+function trackWhatsAppClick(adId) {
+    // Send click tracking request (async, don't wait for response)
+    fetch(`${API}/api/ads/${adId}/whatsapp-click`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    }).catch(() => { }); // Silent fail - don't block user if tracking fails
+}
+
 // ===== Load Public Stats (Users & Ads count) =====
 async function loadStats() {
     try {
@@ -427,7 +436,7 @@ function showAdDetail(adId) {
                 <p>${ad.description || 'لا يوجد وصف'}</p>
             </div>
             ${ad.whatsapp ? `
-                <a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="btn btn-primary ad-detail-whatsapp">
+                <a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="btn btn-primary ad-detail-whatsapp" onclick="trackWhatsAppClick('${ad._id}')">
                     💬 تواصل عبر واتساب
                 </a>
             ` : ''}
