@@ -713,6 +713,7 @@
                         <td>${ad.user?.name || '-'}</td>
                         <td>
                             <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}', '${ad.subCategory || ''}')">✏️</button>
+                            ${ad.status === 'rejected' ? `<button class="action-btn btn-approve" onclick="restoreAd('${ad._id}')" title="استرجاع للموافقة">✓</button>` : ''}
                             <button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button>
                         </td>
                     </tr>
@@ -963,6 +964,30 @@
         function getStatusName(status) {
             const names = { pending: 'بانتظار', approved: 'موافق', rejected: 'مرفوض' };
             return names[status] || status;
+        }
+
+        // Restore rejected ad back to approved
+        async function restoreAd(id) {
+            if (!confirm('هل تريد استرجاع هذا الإعلان للموافقة عليه؟')) return;
+            try {
+                const res = await fetch(`${API}/api/admin/ads/${id}/approve`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ featured: false })
+                });
+                if (res.ok) {
+                    alert('✅ تم استرجاع الإعلان وموافقته بنجاح');
+                    loadAllAds();
+                } else {
+                    const data = await res.json();
+                    alert('❌ ' + (data.message || 'حدث خطأ'));
+                }
+            } catch (e) {
+                alert('❌ خطأ في الاتصال');
+            }
         }
 
         // Edit Ad Functions
