@@ -560,14 +560,61 @@ function logout() {
     showLoggedOut();
 }
 
-// ===== Load Ads from API =====
+// ===== Load Ads from API with Caching =====
 async function loadAds(category = 'all', subCategory = null) {
+    const cacheKey = 'cachedAds';
+    const cacheTimeKey = 'cachedAdsTime';
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    // Step 1: Show cached ads immediately (if available)
+    try {
+        const cachedAds = localStorage.getItem(cacheKey);
+        const cachedTime = localStorage.getItem(cacheTimeKey);
+
+        if (cachedAds && cachedTime) {
+            const ads = JSON.parse(cachedAds);
+            const age = Date.now() - parseInt(cachedTime);
+
+            // Show cached ads immediately
+            if (ads && ads.length > 0) {
+                allAdsData = ads;
+                let filteredAds = ads;
+                if (category !== 'all') {
+                    filteredAds = ads.filter(ad => ad.category === category);
+                }
+                if (subCategory) {
+                    filteredAds = filteredAds.filter(ad => ad.subCategory === subCategory);
+                }
+                if (filteredAds.length > 0) {
+                    renderAds(filteredAds);
+                }
+                updateCategoryCounts(ads);
+
+                // If cache is fresh, skip server fetch
+                if (age < CACHE_DURATION) {
+                    return;
+                }
+            }
+        }
+    } catch (e) {
+        console.log('Cache read error:', e);
+    }
+
+    // Step 2: Fetch fresh ads from server (background refresh)
     try {
         const url = category === 'all' ? `${API}/api/ads` : `${API}/api/ads?category=${category}`;
         const res = await fetch(url);
         const data = await res.json();
 
         if (data.ads && data.ads.length > 0) {
+            // Save to cache
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify(data.ads));
+                localStorage.setItem(cacheTimeKey, Date.now().toString());
+            } catch (e) {
+                console.log('Cache write error:', e);
+            }
+
             let filteredAds = data.ads;
 
             // Filter by subCategory if provided
@@ -598,12 +645,15 @@ async function loadAds(category = 'all', subCategory = null) {
             `;
         }
     } catch (e) {
-        listingsGrid.innerHTML = `
-            <div class="empty-state">
-                <p>⚠️ تعذر تحميل الإعلانات</p>
-                <p>تأكد من تشغيل السيرفر</p>
-            </div>
-        `;
+        // Only show error if no cached ads were displayed
+        if (!localStorage.getItem(cacheKey)) {
+            listingsGrid.innerHTML = `
+                <div class="empty-state">
+                    <p>⚠️ تعذر تحميل الإعلانات</p>
+                    <p>تأكد من اتصال الإنترنت</p>
+                </div>
+            `;
+        }
     }
 }
 
