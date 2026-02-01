@@ -562,15 +562,54 @@ function logout() {
 }
 
 // ===== Load Ads from API with Caching and Retry =====
+// IMPORTANT: Always fetch ALL ads and filter locally to ensure consistency
 async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
-    const cacheKey = 'cachedAds';
-    const cacheTimeKey = 'cachedAdsTime';
-    const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes (match server cache)
+    const cacheKey = 'cachedAllAds';  // Cache key for ALL ads
+    const cacheTimeKey = 'cachedAllAdsTime';
+    const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
     const MAX_RETRIES = 2;
-    const FETCH_TIMEOUT = 10000; // 10 seconds timeout
+    const FETCH_TIMEOUT = 15000; // 15 seconds timeout
 
-    // Step 1: Show cached ads immediately (if available)
+    // Helper function to filter and render ads
+    const filterAndRender = (ads, cat, subCat) => {
+        let filteredAds = ads;
+
+        // Filter by main category
+        if (cat && cat !== 'all') {
+            filteredAds = ads.filter(ad => ad.category === cat);
+        }
+
+        // Filter by subcategory
+        if (subCat) {
+            filteredAds = filteredAds.filter(ad => ad.subCategory === subCat);
+        }
+
+        // Render results
+        if (filteredAds.length > 0) {
+            renderAds(filteredAds);
+        } else if (cat !== 'all') {
+            listingsGrid.innerHTML = `
+                <div class="empty-state">
+                    <p>📭 لا توجد إعلانات لهذه الفئة حالياً</p>
+                    <button class="btn btn-outline" onclick="loadAds('all')" style="margin-top: 10px;">عرض كل الإعلانات</button>
+                </div>
+            `;
+        } else {
+            listingsGrid.innerHTML = `
+                <div class="empty-state">
+                    <p>📭 لا توجد إعلانات حالياً</p>
+                    <p>كن أول من ينشر إعلان!</p>
+                </div>
+            `;
+        }
+
+        return filteredAds.length;
+    };
+
+    // Step 1: Try to show cached ads immediately
     let hasCachedData = false;
+    let cachedIsFresh = false;
+
     try {
         const cachedAds = localStorage.getItem(cacheKey);
         const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -579,25 +618,18 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
             const ads = JSON.parse(cachedAds);
             const age = Date.now() - parseInt(cachedTime);
 
-            // Show cached ads immediately
             if (ads && ads.length > 0) {
                 hasCachedData = true;
                 allAdsData = ads;
-                let filteredAds = ads;
-                if (category !== 'all') {
-                    filteredAds = ads.filter(ad => ad.category === category);
-                }
-                if (subCategory) {
-                    filteredAds = filteredAds.filter(ad => ad.subCategory === subCategory);
-                }
-                if (filteredAds.length > 0) {
-                    renderAds(filteredAds);
-                }
+
+                // Show cached ads immediately (filtered by category)
+                filterAndRender(ads, category, subCategory);
                 updateCategoryCounts(ads);
 
-                // If cache is fresh, skip server fetch
+                // If cache is fresh (less than 2 minutes), don't fetch from server
                 if (age < CACHE_DURATION) {
-                    console.log('📦 Using fresh cached ads');
+                    console.log('📦 Using fresh cached ads (' + ads.length + ' total)');
+                    cachedIsFresh = true;
                     return;
                 }
             }
@@ -615,17 +647,19 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         `;
     }
 
-    // Step 2: Fetch fresh ads from server with timeout
+    // Step 2: ALWAYS fetch ALL ads from server (not filtered by category)
     try {
-        const url = category === 'all' ? `${API}/api/ads` : `${API}/api/ads?category=${category}`;
+        const url = `${API}/api/ads`; // Always fetch ALL ads
 
-        // Create abort controller for timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
         const res = await fetch(url, {
             signal: controller.signal,
-            headers: { 'Accept': 'application/json' }
+            headers: {
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache'  // Prevent browser caching
+            }
         });
         clearTimeout(timeoutId);
 
@@ -636,36 +670,25 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         const data = await res.json();
 
         if (data.ads && data.ads.length > 0) {
-            // Save to cache
+            // Save ALL ads to cache
             try {
                 localStorage.setItem(cacheKey, JSON.stringify(data.ads));
                 localStorage.setItem(cacheTimeKey, Date.now().toString());
             } catch (e) {
-                console.log('Cache write error:', e);
+                console.log('Cache write error (storage full?):', e);
+                // Clear old cache and try again
+                localStorage.removeItem(cacheKey);
+                localStorage.removeItem(cacheTimeKey);
             }
 
-            let filteredAds = data.ads;
+            allAdsData = data.ads;
 
-            // Filter by subCategory if provided
-            if (subCategory) {
-                filteredAds = data.ads.filter(ad => ad.subCategory === subCategory);
-            }
-
-            allAdsData = data.ads; // Store all for detail view
-
-            // Check if filtered results are empty
-            if (filteredAds.length > 0) {
-                renderAds(filteredAds);
-            } else {
-                listingsGrid.innerHTML = `
-                    <div class="empty-state">
-                        <p>📭 لا توجد إعلانات لهذا النوع حالياً</p>
-                        <p>جرب اختيار "الكل" لعرض جميع الإعلانات في هذه الفئة</p>
-                    </div>
-                `;
-            }
+            // Filter and render based on requested category
+            filterAndRender(data.ads, category, subCategory);
             updateCategoryCounts(data.ads);
-            console.log(`✅ Loaded ${data.ads.length} ads from server`);
+
+            console.log(`✅ Loaded ${data.ads.length} ads from server, showing ${category} category`);
+
         } else if (!hasCachedData) {
             listingsGrid.innerHTML = `
                 <div class="empty-state">
@@ -680,7 +703,7 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         // Retry logic
         if (retryCount < MAX_RETRIES) {
             console.log(`🔄 Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-            setTimeout(() => loadAds(category, subCategory, retryCount + 1), 1000 * (retryCount + 1));
+            setTimeout(() => loadAds(category, subCategory, retryCount + 1), 1500 * (retryCount + 1));
             return;
         }
 
@@ -695,6 +718,13 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
             `;
         }
     }
+}
+
+// ===== Force Refresh Ads (clear cache and reload) =====
+function refreshAds() {
+    localStorage.removeItem('cachedAllAds');
+    localStorage.removeItem('cachedAllAdsTime');
+    loadAds('all');
 }
 
 function renderAds(ads) {

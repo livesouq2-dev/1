@@ -62,44 +62,64 @@ const auth = async (req, res, next) => {
 };
 
 // Get all approved ads (public) - OPTIMIZED WITH CACHE
+// IMPORTANT: Always cache ALL ads, filter on request if needed
 router.get('/', async (req, res) => {
     try {
-        const { category, page = 1, limit = 50 } = req.query;
+        const { category, page = 1, limit = 100 } = req.query;
 
-        // For "all" category with no pagination, try cache first
-        const useCache = (!category || category === 'all') && page == 1 && limit >= 50;
-
-        if (useCache && cache.isValid('ads')) {
+        // Try to use cache for faster response
+        if (cache.isValid('ads') && cache.ads && cache.ads.length > 0) {
             console.log('📦 Serving ads from cache');
-            return res.json({ ads: cache.ads, fromCache: true });
+
+            let resultAds = cache.ads;
+
+            // Filter by category if requested (but cache stores ALL)
+            if (category && category !== 'all') {
+                resultAds = cache.ads.filter(ad => ad.category === category);
+            }
+
+            // Apply pagination
+            const startIndex = (parseInt(page) - 1) * parseInt(limit);
+            const paginatedAds = resultAds.slice(startIndex, startIndex + parseInt(limit));
+
+            return res.json({ ads: paginatedAds, total: resultAds.length, fromCache: true });
         }
 
-        const query = { status: 'approved' };
-        if (category && category !== 'all') {
-            query.category = category;
-        }
-
-        // Use lean() for faster queries (returns plain JS objects)
-        const ads = await Ad.find(query)
+        // Fetch ALL approved ads from database (no category filter for caching)
+        const allAds = await Ad.find({ status: 'approved' })
             .select('title description category subCategory price location whatsapp isFeatured createdAt images user jobType jobExperience')
             .populate('user', 'name')
             .sort({ isFeatured: -1, createdAt: -1 })
-            .limit(parseInt(limit))
-            .skip((parseInt(page) - 1) * parseInt(limit))
+            .limit(200)  // Max 200 ads for performance
             .lean();
 
-        // Cache the result for "all" queries
-        if (useCache && ads.length > 0) {
-            cache.set('ads', ads);
-            console.log(`📦 Cached ${ads.length} ads`);
+        // Cache ALL ads
+        if (allAds.length > 0) {
+            cache.set('ads', allAds);
+            console.log(`📦 Cached ${allAds.length} total ads`);
         }
 
-        res.json({ ads });
+        // Now filter by category if requested
+        let resultAds = allAds;
+        if (category && category !== 'all') {
+            resultAds = allAds.filter(ad => ad.category === category);
+        }
+
+        // Apply pagination
+        const startIndex = (parseInt(page) - 1) * parseInt(limit);
+        const paginatedAds = resultAds.slice(startIndex, startIndex + parseInt(limit));
+
+        res.json({ ads: paginatedAds, total: resultAds.length });
     } catch (error) {
         console.error('❌ Error loading ads:', error.message);
         // If cache exists, serve it on error
-        if (cache.ads) {
-            return res.json({ ads: cache.ads, fromCache: true, stale: true });
+        if (cache.ads && cache.ads.length > 0) {
+            const { category } = req.query;
+            let resultAds = cache.ads;
+            if (category && category !== 'all') {
+                resultAds = cache.ads.filter(ad => ad.category === category);
+            }
+            return res.json({ ads: resultAds, fromCache: true, stale: true });
         }
         res.status(500).json({ message: error.message });
     }
