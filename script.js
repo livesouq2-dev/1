@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.4.0'; // Placeholder cards for instant visual feedback
+const APP_VERSION = '2.5.0'; // DB indexes + aggressive image compression (50%)
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -173,9 +173,9 @@ function setGalleryImage(index) {
     });
 }
 
-// ===== Image Compression Function =====
-// Compresses image to max 800x800 and 70% quality to save MongoDB storage
-async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+// ===== Image Compression Function - OPTIMIZED FOR FAST LOADING =====
+// Compresses image to max 600x600 and 50% quality for FAST loading on slow internet
+async function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.5) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -185,7 +185,7 @@ async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.
                 let width = img.width;
                 let height = img.height;
 
-                // Calculate new dimensions
+                // Calculate new dimensions - scale down more aggressively
                 if (width > height) {
                     if (width > maxWidth) {
                         height = Math.round((height * maxWidth) / width);
@@ -203,7 +203,7 @@ async function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Convert to base64 with compression
+                // Convert to base64 with AGGRESSIVE compression (50% quality)
                 const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
                 resolve(compressedBase64);
             };
@@ -499,8 +499,8 @@ function showAdDetail(adId) {
     openModal('adDetailModal');
 }
 
-// ===== Helper: Compress and Convert Image to Base64 =====
-function compressImage(file, maxWidth = 800, quality = 0.7) {
+// ===== Helper: Compress and Convert Image to Base64 - OPTIMIZED =====
+function compressImageHelper(file, maxWidth = 600, quality = 0.5) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -512,10 +512,14 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
                 let width = img.width;
                 let height = img.height;
 
-                // Resize if larger than maxWidth
+                // Resize if larger than maxWidth - more aggressive
                 if (width > maxWidth) {
                     height = (height * maxWidth) / width;
                     width = maxWidth;
+                }
+                if (height > maxWidth) {
+                    width = (width * maxWidth) / height;
+                    height = maxWidth;
                 }
 
                 canvas.width = width;
@@ -524,7 +528,7 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Convert to compressed JPEG
+                // Convert to compressed JPEG - 50% quality for fast loading
                 const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
                 resolve(compressedBase64);
             };

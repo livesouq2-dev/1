@@ -76,10 +76,20 @@ const adSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Indexes for faster queries
-adSchema.index({ category: 1, status: 1 });
-adSchema.index({ user: 1 });
-adSchema.index({ status: 1, isFeatured: -1, createdAt: -1 }); // For sorting approved ads
-adSchema.index({ createdAt: -1 }); // For date sorting
+// Optimized Indexes for FAST queries
+// Compound index for the main ads query (approved ads sorted by featured then date)
+adSchema.index({ status: 1, isFeatured: -1, createdAt: -1 });
+
+// Category filtering with status
+adSchema.index({ category: 1, status: 1, createdAt: -1 });
+
+// User's ads
+adSchema.index({ user: 1, createdAt: -1 });
+
+// Status only (for admin queries)
+adSchema.index({ status: 1 });
+
+// Text search index for search functionality
+adSchema.index({ title: 'text', description: 'text', location: 'text' });
 
 module.exports = mongoose.model('Ad', adSchema);
