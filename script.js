@@ -1,6 +1,23 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
+const APP_VERSION = '2.1.0'; // Version to force cache refresh
+
+// ===== Clear Old Cache on Version Update =====
+(function clearOldCache() {
+    const lastVersion = localStorage.getItem('appVersion');
+    if (lastVersion !== APP_VERSION) {
+        console.log('🔄 New version detected, clearing old cache...');
+        // Clear all old cache keys
+        localStorage.removeItem('cachedAds');
+        localStorage.removeItem('cachedAdsTime');
+        localStorage.removeItem('cachedAllAds');
+        localStorage.removeItem('cachedAllAdsTime');
+        // Save new version
+        localStorage.setItem('appVersion', APP_VERSION);
+        console.log('✅ Cache cleared, version updated to', APP_VERSION);
+    }
+})();
 
 // ===== Auth State =====
 let token = localStorage.getItem('token');

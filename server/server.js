@@ -171,9 +171,13 @@ app.use(express.static(path.join(__dirname, '..'), {
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
         }
-        // Cache static assets like CSS/JS
-        else if (filepath.endsWith('.css') || filepath.endsWith('.js')) {
-            res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour instead of 1 year
+        // Short cache for JS files (5 minutes) - IMPORTANT for fast updates
+        else if (filepath.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate'); // 5 minutes
+        }
+        // Longer cache for CSS and images
+        else if (filepath.endsWith('.css') || filepath.match(/\.(png|jpg|jpeg|gif|webp|ico)$/)) {
+            res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
         }
     }
 }));
