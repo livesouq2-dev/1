@@ -1,21 +1,43 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.1.0'; // Version to force cache refresh
+const APP_VERSION = '2.1.1'; // Version to force cache refresh - increment to clear all user caches
 
-// ===== Clear Old Cache on Version Update =====
-(function clearOldCache() {
-    const lastVersion = localStorage.getItem('appVersion');
-    if (lastVersion !== APP_VERSION) {
-        console.log('🔄 New version detected, clearing old cache...');
-        // Clear all old cache keys
-        localStorage.removeItem('cachedAds');
-        localStorage.removeItem('cachedAdsTime');
-        localStorage.removeItem('cachedAllAds');
-        localStorage.removeItem('cachedAllAdsTime');
-        // Save new version
-        localStorage.setItem('appVersion', APP_VERSION);
-        console.log('✅ Cache cleared, version updated to', APP_VERSION);
+// ===== Automatic Cache Management =====
+// This runs immediately and silently clears outdated cache for all users
+(function autoCacheManager() {
+    try {
+        const lastVersion = localStorage.getItem('appVersion');
+
+        // If version changed OR no version (old user), clear everything
+        if (lastVersion !== APP_VERSION) {
+            // List of ALL possible cache keys to clear (old and new)
+            const cacheKeysToRemove = [
+                'cachedAds',          // Old cache key
+                'cachedAdsTime',      // Old cache time
+                'cachedAllAds',       // New cache key
+                'cachedAllAdsTime',   // New cache time
+                'adsCache',           // Any other variations
+                'adsCacheTime',
+                'allAds',
+                'allAdsTime'
+            ];
+
+            // Clear all cache keys silently
+            cacheKeysToRemove.forEach(key => {
+                try { localStorage.removeItem(key); } catch (e) { }
+            });
+
+            // Save new version to prevent repeated clearing
+            localStorage.setItem('appVersion', APP_VERSION);
+
+            // Log only in development
+            if (window.location.hostname === 'localhost') {
+                console.log('🔄 Cache cleared, updated to v' + APP_VERSION);
+            }
+        }
+    } catch (e) {
+        // Silently fail if localStorage is not available
     }
 })();
 
