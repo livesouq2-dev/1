@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.2.0'; // Version to force cache refresh - increment to clear all user caches
+const APP_VERSION = '2.2.1'; // Version to force cache refresh - increment to clear all user caches
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -682,29 +682,12 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         // Ignore cache errors
     }
 
-    // ===== STEP 2: SHOW SKELETON LOADER (only if no cache) =====
+    // ===== STEP 2: SHOW LOADING MESSAGE (only if no cache) =====
     if (!hasCachedData && listingsGrid) {
-        // Show skeleton placeholders for better UX
         listingsGrid.innerHTML = `
-            <div class="listing-card skeleton-card">
-                <div class="skeleton skeleton-image"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text short"></div>
-            </div>
-            <div class="listing-card skeleton-card">
-                <div class="skeleton skeleton-image"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text short"></div>
-            </div>
-            <div class="listing-card skeleton-card">
-                <div class="skeleton skeleton-image"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text short"></div>
-            </div>
-            <div class="listing-card skeleton-card">
-                <div class="skeleton skeleton-image"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text short"></div>
+            <div class="empty-state">
+                <div class="loading-spinner"></div>
+                <p>🔄 جاري تحميل الإعلانات...</p>
             </div>
         `;
     }
