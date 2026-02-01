@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.3.0'; // ULTRA FAST - embedded ads + service worker
+const APP_VERSION = '2.4.0'; // Placeholder cards for instant visual feedback
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -663,7 +663,16 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
     // Track if we have any cached data to show
     let hasCachedData = false;
 
-    // ===== STEP 0: CHECK FOR SERVER-EMBEDDED ADS (INSTANT!) =====
+    // ===== STEP 0: SHOW PLACEHOLDER ADS INSTANTLY =====
+    // These show immediately while real ads load
+    const placeholderAds = [
+        { _id: 'p1', title: 'جاري التحميل...', description: 'يتم تحميل الإعلانات الآن', category: 'cars', price: '---', location: 'لبنان', images: [], isPlaceholder: true },
+        { _id: 'p2', title: 'جاري التحميل...', description: 'يتم تحميل الإعلانات الآن', category: 'home', price: '---', location: 'لبنان', images: [], isPlaceholder: true },
+        { _id: 'p3', title: 'جاري التحميل...', description: 'يتم تحميل الإعلانات الآن', category: 'realestate', price: '---', location: 'لبنان', images: [], isPlaceholder: true },
+        { _id: 'p4', title: 'جاري التحميل...', description: 'يتم تحميل الإعلانات الآن', category: 'services', price: '---', location: 'لبنان', images: [], isPlaceholder: true }
+    ];
+
+    // ===== STEP 1: CHECK FOR SERVER-EMBEDDED ADS (INSTANT!) =====
     if (window.__INITIAL_ADS__ && window.__INITIAL_ADS__.length > 0) {
         // Server embedded ads - show INSTANTLY
         hasCachedData = true;
@@ -674,7 +683,7 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         delete window.__INITIAL_ADS__;
     }
 
-    // ===== STEP 1: SHOW CACHED ADS (even if old) =====
+    // ===== STEP 2: SHOW CACHED ADS (even if old) =====
     let cacheIsFresh = false;
 
     try {
@@ -709,14 +718,10 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         // Ignore cache errors
     }
 
-    // ===== STEP 2: SHOW LOADING MESSAGE (only if no cache) =====
+    // ===== STEP 3: SHOW PLACEHOLDER CARDS (only if no cache) =====
     if (!hasCachedData && listingsGrid) {
-        listingsGrid.innerHTML = `
-            <div class="empty-state">
-                <div class="loading-spinner"></div>
-                <p>🔄 جاري تحميل الإعلانات...</p>
-            </div>
-        `;
+        // Show placeholder cards that look like real ads but are loading
+        renderAds(placeholderAds);
     }
 
     // ===== STEP 3: FETCH FROM SERVER (background for cached, foreground for new) =====
@@ -807,7 +812,27 @@ function renderAds(ads) {
     // Get favorites from localStorage
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
-    listingsGrid.innerHTML = ads.map((ad, index) => `
+    listingsGrid.innerHTML = ads.map((ad, index) => {
+        // Check if this is a placeholder ad
+        if (ad.isPlaceholder) {
+            return `
+                <article class="listing-card placeholder-card animate-fadeInUp" style="animation-delay: ${index * 0.1}s">
+                    <div class="listing-img">
+                        <div class="skeleton skeleton-image" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                    <div class="listing-info">
+                        <span class="cat">${categoryIcons[ad.category] || '📦'} ${categoryNames[ad.category] || ad.category}</span>
+                        <h3 class="skeleton-text" style="background: var(--glass); height: 20px; border-radius: 4px;"></h3>
+                        <p class="skeleton-text" style="background: var(--glass); height: 16px; width: 60%; border-radius: 4px;"></p>
+                    </div>
+                </article>
+            `;
+        }
+
+        // Regular ad
+        return `
         <article class="listing-card ${ad.isFeatured ? 'featured' : ''} animate-fadeInUp" data-category="${ad.category}" data-id="${ad._id}" style="animation-delay: ${index * 0.1}s">
             <div class="listing-img" onclick="showAdDetail('${ad._id}')" style="cursor: pointer;">
                 <img src="${ad.images && ad.images[0] ? ad.images[0] : 'https://via.placeholder.com/400x250?text=' + encodeURIComponent(ad.title)}" alt="${ad.title}" loading="lazy">
@@ -838,10 +863,14 @@ function renderAds(ads) {
                 </div>
             </div>
         </article>
-    `).join('');
+    `;
+    }).join('');
 
-    // Update stats
-    document.getElementById('statAds').textContent = ads.length;
+    // Update stats - only count real ads, not placeholders
+    const realAds = ads.filter(ad => !ad.isPlaceholder);
+    if (realAds.length > 0) {
+        document.getElementById('statAds').textContent = realAds.length;
+    }
 }
 
 function updateCategoryCounts(ads) {
