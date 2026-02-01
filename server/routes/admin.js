@@ -5,6 +5,9 @@ const Ad = require('../models/Ad');
 const User = require('../models/User');
 const Prices = require('../models/Prices');
 
+// Import cache from ads routes to invalidate when admin makes changes
+const { cache: adsCache } = require('./ads');
+
 // Admin auth middleware
 const adminAuth = async (req, res, next) => {
     try {
@@ -119,6 +122,10 @@ router.patch('/ads/:id/approve', adminAuth, async (req, res) => {
         if (!ad) {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
+
+        // Invalidate cache after approval
+        if (adsCache) adsCache.invalidateAll();
+
         res.json({ message: 'تم قبول الإعلان', ad });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -136,6 +143,10 @@ router.patch('/ads/:id/reject', adminAuth, async (req, res) => {
         if (!ad) {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
+
+        // Invalidate cache after rejection
+        if (adsCache) adsCache.invalidateAll();
+
         res.json({ message: 'تم رفض الإعلان', ad });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -162,6 +173,10 @@ router.put('/ads/:id', adminAuth, async (req, res) => {
         if (!ad) {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
+
+        // Invalidate cache after update
+        if (adsCache) adsCache.invalidateAll();
+
         res.json({ message: 'تم تعديل الإعلان', ad });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -172,6 +187,10 @@ router.put('/ads/:id', adminAuth, async (req, res) => {
 router.delete('/ads/:id', adminAuth, async (req, res) => {
     try {
         await Ad.findByIdAndDelete(req.params.id);
+
+        // Invalidate cache after delete
+        if (adsCache) adsCache.invalidateAll();
+
         res.json({ message: 'تم حذف الإعلان' });
     } catch (error) {
         res.status(500).json({ message: error.message });

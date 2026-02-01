@@ -216,18 +216,37 @@ if (!MONGODB_URI) {
     process.exit(1);
 }
 
+// MongoDB Connection with optimized settings
 mongoose.connect(MONGODB_URI, {
+    // Connection Pool settings for better performance
+    maxPoolSize: 50,           // Max connections in pool
+    minPoolSize: 10,           // Min connections to keep
+    serverSelectionTimeoutMS: 5000,  // Faster server selection
+    socketTimeoutMS: 45000,    // Socket timeout
     // Security options
     retryWrites: true,
     w: 'majority'
-})
-    .then(() => {
-        console.log('✅ تم الاتصال بقاعدة البيانات MongoDB بشكل آمن');
-    })
-    .catch((err) => {
-        console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err.message);
-        process.exit(1);
-    });
+});
+
+// MongoDB connection event handlers
+mongoose.connection.on('connected', () => {
+    console.log('✅ تم الاتصال بقاعدة البيانات MongoDB بشكل آمن');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('❌ خطأ في MongoDB:', err.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('⚠️ تم قطع الاتصال بـ MongoDB - جاري إعادة الاتصال...');
+});
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+    await mongoose.connection.close();
+    console.log('👋 تم إغلاق اتصال MongoDB');
+    process.exit(0);
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;

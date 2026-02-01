@@ -5,6 +5,44 @@ const Ad = require('../models/Ad');
 const User = require('../models/User');
 const Prices = require('../models/Prices');
 
+// ===== Simple In-Memory Cache for Fast Response =====
+const cache = {
+    ads: null,
+    adsTime: 0,
+    stats: null,
+    statsTime: 0,
+    prices: null,
+    pricesTime: 0,
+    CACHE_DURATION: 2 * 60 * 1000,  // 2 minutes
+    STATS_CACHE: 5 * 60 * 1000,     // 5 minutes for stats
+
+    isValid(key) {
+        const now = Date.now();
+        if (key === 'ads') return this.ads && (now - this.adsTime) < this.CACHE_DURATION;
+        if (key === 'stats') return this.stats && (now - this.statsTime) < this.STATS_CACHE;
+        if (key === 'prices') return this.prices && (now - this.pricesTime) < this.STATS_CACHE;
+        return false;
+    },
+
+    set(key, data) {
+        const now = Date.now();
+        if (key === 'ads') { this.ads = data; this.adsTime = now; }
+        if (key === 'stats') { this.stats = data; this.statsTime = now; }
+        if (key === 'prices') { this.prices = data; this.pricesTime = now; }
+    },
+
+    invalidate(key) {
+        if (key === 'ads') { this.ads = null; this.adsTime = 0; }
+        if (key === 'stats') { this.stats = null; this.statsTime = 0; }
+        if (key === 'prices') { this.prices = null; this.pricesTime = 0; }
+    },
+
+    invalidateAll() {
+        this.ads = null; this.adsTime = 0;
+        this.stats = null; this.statsTime = 0;
+    }
+};
+
 // Auth middleware
 const auth = async (req, res, next) => {
     try {
@@ -23,10 +61,19 @@ const auth = async (req, res, next) => {
     }
 };
 
-// Get all approved ads (public) - OPTIMIZED
+// Get all approved ads (public) - OPTIMIZED WITH CACHE
 router.get('/', async (req, res) => {
     try {
         const { category, page = 1, limit = 50 } = req.query;
+
+        // For "all" category with no pagination, try cache first
+        const useCache = (!category || category === 'all') && page == 1 && limit >= 50;
+
+        if (useCache && cache.isValid('ads')) {
+            console.log('📦 Serving ads from cache');
+            return res.json({ ads: cache.ads, fromCache: true });
+        }
+
         const query = { status: 'approved' };
         if (category && category !== 'all') {
             query.category = category;
@@ -41,19 +88,44 @@ router.get('/', async (req, res) => {
             .skip((parseInt(page) - 1) * parseInt(limit))
             .lean();
 
+        // Cache the result for "all" queries
+        if (useCache && ads.length > 0) {
+            cache.set('ads', ads);
+            console.log(`📦 Cached ${ads.length} ads`);
+        }
+
         res.json({ ads });
     } catch (error) {
+        console.error('❌ Error loading ads:', error.message);
+        // If cache exists, serve it on error
+        if (cache.ads) {
+            return res.json({ ads: cache.ads, fromCache: true, stale: true });
+        }
         res.status(500).json({ message: error.message });
     }
 });
 
-// Get public stats (users count, ads count)
+// Get public stats (users count, ads count) - WITH CACHE
 router.get('/stats', async (req, res) => {
     try {
-        const totalAds = await Ad.countDocuments({ status: 'approved' });
-        const totalUsers = await User.countDocuments({ isActive: true });
-        res.json({ totalAds, totalUsers });
+        // Check cache
+        if (cache.isValid('stats')) {
+            return res.json(cache.stats);
+        }
+
+        // Use Promise.all for parallel queries (faster)
+        const [totalAds, totalUsers] = await Promise.all([
+            Ad.countDocuments({ status: 'approved' }),
+            User.countDocuments({ isActive: true })
+        ]);
+
+        const stats = { totalAds, totalUsers };
+        cache.set('stats', stats);
+
+        res.json(stats);
     } catch (error) {
+        // Serve cached stats on error
+        if (cache.stats) return res.json(cache.stats);
         res.status(500).json({ message: error.message });
     }
 });
@@ -135,6 +207,9 @@ router.post('/', auth, async (req, res) => {
 
         const ad = await Ad.create(adData);
 
+        // Invalidate cache after creating ad
+        cache.invalidateAll();
+
         res.status(201).json({
             status: 'success',
             message: 'تم إرسال إعلانك بنجاح! سيتم مراجعته من قبل المشرف. للدفع العمولة والموافقة السريعة، تواصل مع المشرف على الرقم: +961 71 163 211',
@@ -168,6 +243,10 @@ router.put('/:id', auth, async (req, res) => {
         ad.status = 'pending'; // Reset to pending after edit
 
         await ad.save();
+
+        // Invalidate cache after update
+        cache.invalidateAll();
+
         res.json({ message: 'تم تعديل الإعلان بنجاح! سيتم مراجعته مجدداً', ad });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -185,10 +264,16 @@ router.delete('/:id', auth, async (req, res) => {
             return res.status(403).json({ message: 'غير مصرح لك بحذف هذا الإعلان' });
         }
         await Ad.findByIdAndDelete(req.params.id);
+
+        // Invalidate cache after delete
+        cache.invalidateAll();
+
         res.json({ message: 'تم حذف الإعلان بنجاح' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
+// Export router and cache for use in admin routes
 module.exports = router;
+module.exports.cache = cache;

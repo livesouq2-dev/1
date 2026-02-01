@@ -516,6 +516,7 @@ const tabs = document.querySelectorAll('.tab');
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     loadAds();
+    loadStats(); // Load users & ads count
     loadPrices(); // Load gold, silver & dollar prices
     setupEventListeners();
 });
@@ -560,13 +561,16 @@ function logout() {
     showLoggedOut();
 }
 
-// ===== Load Ads from API with Caching =====
-async function loadAds(category = 'all', subCategory = null) {
+// ===== Load Ads from API with Caching and Retry =====
+async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
     const cacheKey = 'cachedAds';
     const cacheTimeKey = 'cachedAdsTime';
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes (match server cache)
+    const MAX_RETRIES = 2;
+    const FETCH_TIMEOUT = 10000; // 10 seconds timeout
 
     // Step 1: Show cached ads immediately (if available)
+    let hasCachedData = false;
     try {
         const cachedAds = localStorage.getItem(cacheKey);
         const cachedTime = localStorage.getItem(cacheTimeKey);
@@ -577,6 +581,7 @@ async function loadAds(category = 'all', subCategory = null) {
 
             // Show cached ads immediately
             if (ads && ads.length > 0) {
+                hasCachedData = true;
                 allAdsData = ads;
                 let filteredAds = ads;
                 if (category !== 'all') {
@@ -592,6 +597,7 @@ async function loadAds(category = 'all', subCategory = null) {
 
                 // If cache is fresh, skip server fetch
                 if (age < CACHE_DURATION) {
+                    console.log('📦 Using fresh cached ads');
                     return;
                 }
             }
@@ -600,10 +606,33 @@ async function loadAds(category = 'all', subCategory = null) {
         console.log('Cache read error:', e);
     }
 
-    // Step 2: Fetch fresh ads from server (background refresh)
+    // Show loading indicator only if no cached data
+    if (!hasCachedData && listingsGrid) {
+        listingsGrid.innerHTML = `
+            <div class="empty-state">
+                <p>🔄 جاري تحميل الإعلانات...</p>
+            </div>
+        `;
+    }
+
+    // Step 2: Fetch fresh ads from server with timeout
     try {
         const url = category === 'all' ? `${API}/api/ads` : `${API}/api/ads?category=${category}`;
-        const res = await fetch(url);
+
+        // Create abort controller for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+        const res = await fetch(url, {
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' }
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
         const data = await res.json();
 
         if (data.ads && data.ads.length > 0) {
@@ -636,7 +665,8 @@ async function loadAds(category = 'all', subCategory = null) {
                 `;
             }
             updateCategoryCounts(data.ads);
-        } else {
+            console.log(`✅ Loaded ${data.ads.length} ads from server`);
+        } else if (!hasCachedData) {
             listingsGrid.innerHTML = `
                 <div class="empty-state">
                     <p>📭 لا توجد إعلانات حالياً</p>
@@ -645,12 +675,22 @@ async function loadAds(category = 'all', subCategory = null) {
             `;
         }
     } catch (e) {
+        console.error('Fetch error:', e.message);
+
+        // Retry logic
+        if (retryCount < MAX_RETRIES) {
+            console.log(`🔄 Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+            setTimeout(() => loadAds(category, subCategory, retryCount + 1), 1000 * (retryCount + 1));
+            return;
+        }
+
         // Only show error if no cached ads were displayed
-        if (!localStorage.getItem(cacheKey)) {
+        if (!hasCachedData && listingsGrid) {
             listingsGrid.innerHTML = `
                 <div class="empty-state">
                     <p>⚠️ تعذر تحميل الإعلانات</p>
                     <p>تأكد من اتصال الإنترنت</p>
+                    <button class="btn btn-primary" onclick="loadAds('${category}', ${subCategory ? `'${subCategory}'` : null})" style="margin-top: 15px;">🔄 إعادة المحاولة</button>
                 </div>
             `;
         }
