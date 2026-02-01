@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.1.1'; // Version to force cache refresh - increment to clear all user caches
+const APP_VERSION = '2.2.0'; // Version to force cache refresh - increment to clear all user caches
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -600,22 +600,24 @@ function logout() {
     showLoggedOut();
 }
 
-// ===== Load Ads from API with Caching and Retry =====
-// IMPORTANT: Always fetch ALL ads and filter locally to ensure consistency
+// ===== Load Ads from API - OPTIMIZED FOR SLOW CONNECTIONS =====
+// Strategy: Show cached data IMMEDIATELY, then update in background
 async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
-    const cacheKey = 'cachedAllAds';  // Cache key for ALL ads
+    const cacheKey = 'cachedAllAds';
     const cacheTimeKey = 'cachedAllAdsTime';
-    const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
-    const MAX_RETRIES = 2;
-    const FETCH_TIMEOUT = 15000; // 15 seconds timeout
+    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - longer for slow connections
+    const MAX_RETRIES = 3;
+    const FETCH_TIMEOUT = 20000; // 20 seconds for slow connections
 
     // Helper function to filter and render ads
     const filterAndRender = (ads, cat, subCat) => {
-        let filteredAds = ads;
+        if (!ads || !listingsGrid) return 0;
+
+        let filteredAds = [...ads]; // Create copy
 
         // Filter by main category
         if (cat && cat !== 'all') {
-            filteredAds = ads.filter(ad => ad.category === cat);
+            filteredAds = filteredAds.filter(ad => ad.category === cat);
         }
 
         // Filter by subcategory
@@ -645,88 +647,99 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         return filteredAds.length;
     };
 
-    // Step 1: Try to show cached ads immediately
+    // ===== STEP 1: SHOW CACHED ADS IMMEDIATELY (even if old) =====
     let hasCachedData = false;
-    let cachedIsFresh = false;
+    let cacheIsFresh = false;
 
     try {
         const cachedAds = localStorage.getItem(cacheKey);
         const cachedTime = localStorage.getItem(cacheTimeKey);
 
-        if (cachedAds && cachedTime) {
+        if (cachedAds) {
             const ads = JSON.parse(cachedAds);
-            const age = Date.now() - parseInt(cachedTime);
 
             if (ads && ads.length > 0) {
                 hasCachedData = true;
                 allAdsData = ads;
 
-                // Show cached ads immediately (filtered by category)
+                // ALWAYS show cached ads immediately - don't make user wait!
                 filterAndRender(ads, category, subCategory);
                 updateCategoryCounts(ads);
 
-                // If cache is fresh (less than 2 minutes), don't fetch from server
-                if (age < CACHE_DURATION) {
-                    console.log('📦 Using fresh cached ads (' + ads.length + ' total)');
-                    cachedIsFresh = true;
-                    return;
+                // Check if cache is fresh
+                if (cachedTime) {
+                    const age = Date.now() - parseInt(cachedTime);
+                    if (age < CACHE_DURATION) {
+                        cacheIsFresh = true;
+                        // Cache is fresh, no need to fetch
+                        return;
+                    }
                 }
+                // Cache is old but we showed it - now fetch in background silently
             }
         }
     } catch (e) {
-        console.log('Cache read error:', e);
+        // Ignore cache errors
     }
 
-    // Show loading indicator only if no cached data
+    // ===== STEP 2: SHOW SKELETON LOADER (only if no cache) =====
     if (!hasCachedData && listingsGrid) {
+        // Show skeleton placeholders for better UX
         listingsGrid.innerHTML = `
-            <div class="empty-state">
-                <p>🔄 جاري تحميل الإعلانات...</p>
+            <div class="listing-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text short"></div>
+            </div>
+            <div class="listing-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text short"></div>
+            </div>
+            <div class="listing-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text short"></div>
+            </div>
+            <div class="listing-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text short"></div>
             </div>
         `;
     }
 
-    // Step 2: ALWAYS fetch ALL ads from server (not filtered by category)
+    // ===== STEP 3: FETCH FROM SERVER (background for cached, foreground for new) =====
     try {
-        const url = `${API}/api/ads`; // Always fetch ALL ads
+        const url = `${API}/api/ads`;
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
         const res = await fetch(url, {
             signal: controller.signal,
-            headers: {
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache'  // Prevent browser caching
-            }
+            headers: { 'Accept': 'application/json' }
         });
         clearTimeout(timeoutId);
 
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
 
         if (data.ads && data.ads.length > 0) {
-            // Save ALL ads to cache
+            // Save to cache
             try {
                 localStorage.setItem(cacheKey, JSON.stringify(data.ads));
                 localStorage.setItem(cacheTimeKey, Date.now().toString());
             } catch (e) {
-                console.log('Cache write error (storage full?):', e);
-                // Clear old cache and try again
+                // Storage full - clear and retry
                 localStorage.removeItem(cacheKey);
                 localStorage.removeItem(cacheTimeKey);
             }
 
             allAdsData = data.ads;
-
-            // Filter and render based on requested category
             filterAndRender(data.ads, category, subCategory);
             updateCategoryCounts(data.ads);
-
-            console.log(`✅ Loaded ${data.ads.length} ads from server, showing ${category} category`);
 
         } else if (!hasCachedData) {
             listingsGrid.innerHTML = `
@@ -737,25 +750,22 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
             `;
         }
     } catch (e) {
-        console.error('Fetch error:', e.message);
-
-        // Retry logic
-        if (retryCount < MAX_RETRIES) {
-            console.log(`🔄 Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-            setTimeout(() => loadAds(category, subCategory, retryCount + 1), 1500 * (retryCount + 1));
+        // Retry only if no cached data shown
+        if (!hasCachedData && retryCount < MAX_RETRIES) {
+            setTimeout(() => loadAds(category, subCategory, retryCount + 1), 2000 * (retryCount + 1));
             return;
         }
 
-        // Only show error if no cached ads were displayed
+        // Show error only if no cached ads
         if (!hasCachedData && listingsGrid) {
             listingsGrid.innerHTML = `
                 <div class="empty-state">
                     <p>⚠️ تعذر تحميل الإعلانات</p>
-                    <p>تأكد من اتصال الإنترنت</p>
-                    <button class="btn btn-primary" onclick="loadAds('${category}', ${subCategory ? `'${subCategory}'` : null})" style="margin-top: 15px;">🔄 إعادة المحاولة</button>
+                    <button class="btn btn-primary" onclick="loadAds('${category}')" style="margin-top: 10px;">🔄 إعادة المحاولة</button>
                 </div>
             `;
         }
+        // If we have cached data, user already sees ads - no need to show error
     }
 }
 
