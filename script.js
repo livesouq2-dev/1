@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.2.1'; // Version to force cache refresh - increment to clear all user caches
+const APP_VERSION = '2.3.0'; // ULTRA FAST - embedded ads + service worker
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -40,6 +40,19 @@ const APP_VERSION = '2.2.1'; // Version to force cache refresh - increment to cl
         // Silently fail if localStorage is not available
     }
 })();
+
+// ===== Register Service Worker for Offline Support =====
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => {
+                // Silent success
+            })
+            .catch(err => {
+                // Silent fail - SW not critical
+            });
+    });
+}
 
 // ===== Auth State =====
 let token = localStorage.getItem('token');
@@ -600,14 +613,14 @@ function logout() {
     showLoggedOut();
 }
 
-// ===== Load Ads from API - OPTIMIZED FOR SLOW CONNECTIONS =====
-// Strategy: Show cached data IMMEDIATELY, then update in background
+// ===== Load Ads from API - ULTRA FAST FOR SLOW CONNECTIONS =====
+// Priority: 1) Server-embedded ads (instant), 2) LocalStorage cache, 3) Fetch from API
 async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
     const cacheKey = 'cachedAllAds';
     const cacheTimeKey = 'cachedAllAdsTime';
-    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - longer for slow connections
+    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
     const MAX_RETRIES = 3;
-    const FETCH_TIMEOUT = 20000; // 20 seconds for slow connections
+    const FETCH_TIMEOUT = 20000; // 20 seconds
 
     // Helper function to filter and render ads
     const filterAndRender = (ads, cat, subCat) => {
@@ -647,8 +660,21 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         return filteredAds.length;
     };
 
-    // ===== STEP 1: SHOW CACHED ADS IMMEDIATELY (even if old) =====
+    // Track if we have any cached data to show
     let hasCachedData = false;
+
+    // ===== STEP 0: CHECK FOR SERVER-EMBEDDED ADS (INSTANT!) =====
+    if (window.__INITIAL_ADS__ && window.__INITIAL_ADS__.length > 0) {
+        // Server embedded ads - show INSTANTLY
+        hasCachedData = true;
+        allAdsData = window.__INITIAL_ADS__;
+        filterAndRender(window.__INITIAL_ADS__, category, subCategory);
+        updateCategoryCounts(window.__INITIAL_ADS__);
+        // Clear the embedded data after first use
+        delete window.__INITIAL_ADS__;
+    }
+
+    // ===== STEP 1: SHOW CACHED ADS (even if old) =====
     let cacheIsFresh = false;
 
     try {
@@ -659,12 +685,13 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
             const ads = JSON.parse(cachedAds);
 
             if (ads && ads.length > 0) {
-                hasCachedData = true;
-                allAdsData = ads;
-
-                // ALWAYS show cached ads immediately - don't make user wait!
-                filterAndRender(ads, category, subCategory);
-                updateCategoryCounts(ads);
+                // Only update if we have more ads than embedded
+                if (!hasCachedData || ads.length > allAdsData.length) {
+                    hasCachedData = true;
+                    allAdsData = ads;
+                    filterAndRender(ads, category, subCategory);
+                    updateCategoryCounts(ads);
+                }
 
                 // Check if cache is fresh
                 if (cachedTime) {

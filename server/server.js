@@ -8,11 +8,13 @@ const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const compression = require('compression');
+const fs = require('fs');
 
 // Import routes
 const authRoutes = require('./routes/auth');
 const adsRoutes = require('./routes/ads');
 const adminRoutes = require('./routes/admin');
+const Ad = require('./models/Ad');
 
 const app = express();
 
@@ -187,9 +189,38 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ads', adsRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
+// Serve frontend with embedded initial ads for INSTANT loading
+app.get('/', async (req, res) => {
+    try {
+        // Get initial ads from cache or database (fast)
+        const { cache } = require('./routes/ads');
+        let initialAds = [];
+
+        if (cache.isValid && cache.isValid('ads') && cache.ads) {
+            initialAds = cache.ads.slice(0, 8); // First 8 ads from cache
+        } else {
+            // Fetch from DB if no cache
+            initialAds = await Ad.find({ status: 'approved' })
+                .select('title description category subCategory price location whatsapp isFeatured createdAt images')
+                .populate('user', 'name')
+                .sort({ isFeatured: -1, createdAt: -1 })
+                .limit(8)
+                .lean();
+        }
+
+        // Read HTML file
+        const htmlPath = path.join(__dirname, '..', 'index.html');
+        let html = fs.readFileSync(htmlPath, 'utf8');
+
+        // Inject initial ads data as JSON in script tag (before closing body)
+        const adsScript = `<script>window.__INITIAL_ADS__ = ${JSON.stringify(initialAds)};</script>`;
+        html = html.replace('</body>', adsScript + '</body>');
+
+        res.send(html);
+    } catch (error) {
+        // Fallback: just send the HTML file
+        res.sendFile(path.join(__dirname, '..', 'index.html'));
+    }
 });
 
 app.get('/admin', (req, res) => {
