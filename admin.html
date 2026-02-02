@@ -671,14 +671,19 @@
             } catch (e) { console.error(e); }
         }
 
+        // Store ads data for safe access (avoids inline onclick issues with special characters)
+        let pendingAdsData = [];
+        let allAdsData = [];
+
         async function loadPendingAds() {
             try {
                 const res = await fetch(`${API}/api/admin/pending-ads`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const { ads } = await res.json();
+                pendingAdsData = ads; // Store for later use
                 const tbody = document.getElementById('pendingAdsTable');
-                tbody.innerHTML = ads.length ? ads.map(ad => `
+                tbody.innerHTML = ads.length ? ads.map((ad, index) => `
                     <tr>
                         <td>${ad.title}</td>
                         <td>${getCategoryName(ad.category)}</td>
@@ -687,7 +692,7 @@
                         <td style="direction:ltr">${ad.user?.phone || '-'}</td>
                         <td>${new Date(ad.createdAt).toLocaleDateString('ar')}</td>
                         <td>
-                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}', '${ad.subCategory || ''}')">✏️ تعديل</button>
+                            <button class="action-btn btn-edit" onclick="openEditAdById('${ad._id}', 'pending')">✏️ تعديل</button>
                             <button class="action-btn btn-approve" onclick="approveAd('${ad._id}')">✓ قبول</button>
                             <button class="action-btn btn-reject" onclick="rejectAd('${ad._id}')">✗ رفض</button>
                         </td>
@@ -702,6 +707,7 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const { ads } = await res.json();
+                allAdsData = ads; // Store for later use
                 const tbody = document.getElementById('allAdsTable');
                 tbody.innerHTML = ads.length ? ads.map(ad => `
                     <tr class="${ad.isFeatured ? 'featured-row' : ''}">
@@ -712,7 +718,7 @@
                         <td><span class="status-badge status-${ad.status}">${getStatusName(ad.status)}</span></td>
                         <td>${ad.user?.name || '-'}</td>
                         <td>
-                            <button class="action-btn btn-edit" onclick="openEditAd('${ad._id}', '${ad.title}', '${ad.category}', '${ad.price}', '${ad.location || ''}', '${ad.whatsapp || ''}', '${(ad.description || '').replace(/'/g, "\\'")}', '${ad.jobType || ''}', '${ad.jobExperience || ''}', '${ad.isFeatured || false}', '${ad.subCategory || ''}')">✏️</button>
+                            <button class="action-btn btn-edit" onclick="openEditAdById('${ad._id}', 'all')">✏️</button>
                             ${ad.status === 'rejected' ? `<button class="action-btn btn-approve" onclick="restoreAd('${ad._id}')" title="استرجاع للموافقة">✓</button>` : ''}
                             <button class="action-btn btn-delete" onclick="deleteAd('${ad._id}')">🗑️</button>
                         </td>
@@ -990,7 +996,38 @@
             }
         }
 
-        // Edit Ad Functions
+        // Edit Ad Functions - NEW: Get ad data from stored array (fixes special character issues)
+        function openEditAdById(id, source) {
+            // Find ad in the appropriate array
+            let ad = null;
+            if (source === 'pending') {
+                ad = pendingAdsData.find(a => a._id === id);
+            } else if (source === 'all') {
+                ad = allAdsData.find(a => a._id === id);
+            }
+
+            if (!ad) {
+                alert('❌ لم يتم العثور على الإعلان');
+                return;
+            }
+
+            // Fill form with ad data
+            document.getElementById('editAdId').value = ad._id;
+            document.getElementById('editTitle').value = ad.title || '';
+            document.getElementById('editCategory').value = ad.category || '';
+            document.getElementById('editPrice').value = ad.price || '';
+            document.getElementById('editLocation').value = ad.location || '';
+            document.getElementById('editWhatsapp').value = ad.whatsapp || '';
+            document.getElementById('editDescription').value = ad.description || '';
+            document.getElementById('editJobType').value = ad.jobType || '';
+            document.getElementById('editJobExperience').value = ad.jobExperience || '';
+            document.getElementById('editFeatured').checked = ad.isFeatured === true;
+            toggleAdminJobFields();
+            updateAdminSubCategories(ad.subCategory || '');
+            document.getElementById('editAdModal').classList.add('active');
+        }
+
+        // Legacy function (kept for compatibility)
         function openEditAd(id, title, category, price, location, whatsapp, description, jobType, jobExperience, isFeatured, subCategory) {
             document.getElementById('editAdId').value = id;
             document.getElementById('editTitle').value = title;
