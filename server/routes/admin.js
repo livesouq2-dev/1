@@ -8,6 +8,9 @@ const Prices = require('../models/Prices');
 // Import cache from ads routes to invalidate when admin makes changes
 const { cache: adsCache } = require('./ads');
 
+// Import cache manager for rebuilding ads-cache.json
+const { rebuildAdsCache } = require('../utils/cacheManager');
+
 // Admin auth middleware
 const adminAuth = async (req, res, next) => {
     try {
@@ -123,8 +126,11 @@ router.patch('/ads/:id/approve', adminAuth, async (req, res) => {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
 
-        // Invalidate cache after approval
+        // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
+
+        // Rebuild static JSON cache (async, don't wait)
+        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
 
         res.json({ message: 'تم قبول الإعلان', ad });
     } catch (error) {
@@ -144,8 +150,11 @@ router.patch('/ads/:id/reject', adminAuth, async (req, res) => {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
 
-        // Invalidate cache after rejection
+        // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
+
+        // Rebuild static JSON cache
+        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
 
         res.json({ message: 'تم رفض الإعلان', ad });
     } catch (error) {
@@ -174,8 +183,11 @@ router.put('/ads/:id', adminAuth, async (req, res) => {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
 
-        // Invalidate cache after update
+        // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
+
+        // Rebuild static JSON cache
+        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
 
         res.json({ message: 'تم تعديل الإعلان', ad });
     } catch (error) {
@@ -188,8 +200,11 @@ router.delete('/ads/:id', adminAuth, async (req, res) => {
     try {
         await Ad.findByIdAndDelete(req.params.id);
 
-        // Invalidate cache after delete
+        // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
+
+        // Rebuild static JSON cache
+        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
 
         res.json({ message: 'تم حذف الإعلان' });
     } catch (error) {

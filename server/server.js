@@ -16,6 +16,9 @@ const adsRoutes = require('./routes/ads');
 const adminRoutes = require('./routes/admin');
 const Ad = require('./models/Ad');
 
+// Import cache manager for pre-built JSON cache
+const { rebuildAdsCache, cacheExists } = require('./utils/cacheManager');
+
 const app = express();
 
 // ===== SECURITY MIDDLEWARE =====
@@ -184,6 +187,16 @@ app.use(express.static(path.join(__dirname, '..'), {
     }
 }));
 
+// Serve public folder (for ads-cache.json etc) with short cache
+app.use('/public', express.static(path.join(__dirname, '..', 'public'), {
+    setHeaders: (res, filepath) => {
+        // Short cache for JSON cache files (2 minutes)
+        if (filepath.endsWith('.json')) {
+            res.setHeader('Cache-Control', 'public, max-age=120'); // 2 minutes
+        }
+    }
+}));
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ads', adsRoutes);
@@ -285,7 +298,7 @@ process.on('SIGINT', async () => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`
 🛒 بدّل وبيع - Badel w Bi3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -295,4 +308,15 @@ app.listen(PORT, () => {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 🛡️ الحماية: Helmet ✓ | Rate Limit ✓ | NoSQL Sanitize ✓
     `);
+
+    // Build ads cache on startup (after MongoDB is connected)
+    setTimeout(async () => {
+        try {
+            console.log('📦 Building initial ads cache...');
+            await rebuildAdsCache();
+            console.log('✅ Initial ads cache ready!');
+        } catch (err) {
+            console.error('⚠️ Could not build initial cache:', err.message);
+        }
+    }, 3000); // Wait 3 seconds for MongoDB to be ready
 });

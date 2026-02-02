@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '2.5.0'; // DB indexes + aggressive image compression (50%)
+const APP_VERSION = '3.0.0'; // PRE-BUILT JSON CACHE - instant loading!
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -685,6 +685,34 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         updateCategoryCounts(window.__INITIAL_ADS__);
         // Clear the embedded data after first use
         delete window.__INITIAL_ADS__;
+    }
+
+    // ===== STEP 1.5: TRY PRE-BUILT JSON CACHE (very fast!) =====
+    if (!hasCachedData) {
+        try {
+            const cacheRes = await fetch('/public/ads-cache.json', {
+                cache: 'default',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (cacheRes.ok) {
+                const cacheData = await cacheRes.json();
+                if (cacheData.ads && cacheData.ads.length > 0) {
+                    console.log(`⚡ Loaded ${cacheData.ads.length} ads from JSON cache (generated: ${cacheData.generatedAt})`);
+                    hasCachedData = true;
+                    allAdsData = cacheData.ads;
+                    filterAndRender(cacheData.ads, category, subCategory);
+                    updateCategoryCounts(cacheData.ads);
+
+                    // Also save to localStorage for offline use
+                    try {
+                        localStorage.setItem(cacheKey, JSON.stringify(cacheData.ads));
+                        localStorage.setItem(cacheTimeKey, Date.now().toString());
+                    } catch (e) { }
+                }
+            }
+        } catch (e) {
+            console.log('📦 JSON cache not available, falling back to API');
+        }
     }
 
     // ===== STEP 2: SHOW CACHED ADS (even if old) =====
