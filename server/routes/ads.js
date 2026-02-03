@@ -85,12 +85,12 @@ router.get('/', async (req, res) => {
             return res.json({ ads: paginatedAds, total: resultAds.length, fromCache: true });
         }
 
-        // Fetch ALL approved ads from database (no category filter for caching)
+        // Fetch approved ads - SIMPLIFIED for faster loading
         const allAds = await Ad.find({ status: 'approved' })
-            .select('title description category subCategory price location whatsapp isFeatured createdAt images user jobType jobExperience')
-            .populate('user', 'name')
+            .select('title description category subCategory price location whatsapp isFeatured createdAt images jobType jobExperience')
             .sort({ isFeatured: -1, createdAt: -1 })
-            .limit(200)  // Max 200 ads for performance
+            .limit(100)  // Reduced for faster loading
+            .maxTimeMS(10000)  // 10 second timeout
             .lean();
 
         // Cache ALL ads
