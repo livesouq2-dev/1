@@ -61,7 +61,7 @@ const auth = async (req, res, next) => {
     }
 };
 
-// Get all approved ads (public) - OPTIMIZED WITH CACHE AND TIMEOUT HANDLING
+// Get all approved ads (public) - WITH CACHE
 router.get('/', async (req, res) => {
     try {
         const { category, page = 1, limit = 100 } = req.query;
@@ -72,7 +72,7 @@ router.get('/', async (req, res) => {
 
             let resultAds = cache.ads;
 
-            // Filter by category if requested (but cache stores ALL)
+            // Filter by category if requested
             if (category && category !== 'all') {
                 resultAds = cache.ads.filter(ad => ad.category === category);
             }
@@ -84,34 +84,21 @@ router.get('/', async (req, res) => {
             return res.json({ ads: paginatedAds, total: resultAds.length, fromCache: true });
         }
 
-        // Create a timeout promise
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Query timeout')), 8000)
-        );
-
-        // Create the database query promise
-        const queryPromise = Ad.find({ status: 'approved' })
+        // Fetch all approved ads from database
+        const allAds = await Ad.find({ status: 'approved' })
             .select('title description category subCategory price location whatsapp isFeatured createdAt images jobType jobExperience')
+            .populate('user', 'name')
             .sort({ isFeatured: -1, createdAt: -1 })
-            .limit(50)  // Reduced to 50 for faster loading
+            .limit(200)
             .lean();
 
-        // Race between query and timeout
-        let allAds = [];
-        try {
-            allAds = await Promise.race([queryPromise, timeoutPromise]);
-        } catch (timeoutError) {
-            console.log('⚠️ Query timed out, returning empty array');
-            return res.json({ ads: [], total: 0, timeout: true });
-        }
-
-        // Cache ALL ads
+        // Cache all ads
         if (allAds && allAds.length > 0) {
             cache.set('ads', allAds);
-            console.log(`📦 Cached ${allAds.length} total ads`);
+            console.log(`📦 Cached ${allAds.length} ads`);
         }
 
-        // Now filter by category if requested
+        // Filter by category if requested
         let resultAds = allAds || [];
         if (category && category !== 'all') {
             resultAds = resultAds.filter(ad => ad.category === category);
@@ -133,8 +120,7 @@ router.get('/', async (req, res) => {
             }
             return res.json({ ads: resultAds, fromCache: true, stale: true });
         }
-        // Return empty on error instead of 500
-        res.json({ ads: [], total: 0, error: true });
+        res.status(500).json({ message: 'خطأ في تحميل الإعلانات', error: error.message });
     }
 });
 
