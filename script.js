@@ -687,33 +687,7 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         delete window.__INITIAL_ADS__;
     }
 
-    // ===== STEP 1.5: TRY PRE-BUILT JSON CACHE (very fast!) =====
-    if (!hasCachedData) {
-        try {
-            const cacheRes = await fetch('/public/ads-cache.json', {
-                cache: 'default',
-                headers: { 'Accept': 'application/json' }
-            });
-            if (cacheRes.ok) {
-                const cacheData = await cacheRes.json();
-                if (cacheData.ads && cacheData.ads.length > 0) {
-                    console.log(`⚡ Loaded ${cacheData.ads.length} ads from JSON cache (generated: ${cacheData.generatedAt})`);
-                    hasCachedData = true;
-                    allAdsData = cacheData.ads;
-                    filterAndRender(cacheData.ads, category, subCategory);
-                    updateCategoryCounts(cacheData.ads);
-
-                    // Also save to localStorage for offline use
-                    try {
-                        localStorage.setItem(cacheKey, JSON.stringify(cacheData.ads));
-                        localStorage.setItem(cacheTimeKey, Date.now().toString());
-                    } catch (e) { }
-                }
-            }
-        } catch (e) {
-            console.log('📦 JSON cache not available, falling back to API');
-        }
-    }
+    // JSON cache removed - using direct API loading
 
     // ===== STEP 2: SHOW CACHED ADS (even if old) =====
     let cacheIsFresh = false;
@@ -823,59 +797,6 @@ function refreshAds() {
     loadAds('all');
 }
 
-// ===== AUTO-REFRESH: Check for new ads every 3 minutes =====
-const AUTO_REFRESH_INTERVAL = 3 * 60 * 1000; // 3 minutes
-let lastAdsCount = 0;
-
-function startAutoRefresh() {
-    setInterval(async () => {
-        try {
-            // Fetch the JSON cache silently
-            const res = await fetch('/public/ads-cache.json?t=' + Date.now(), {
-                cache: 'no-store'
-            });
-            if (!res.ok) return;
-
-            const cacheData = await res.json();
-            if (!cacheData.ads || cacheData.ads.length === 0) return;
-
-            // Check if there are new ads
-            if (cacheData.ads.length !== lastAdsCount ||
-                (allAdsData.length > 0 && cacheData.ads[0]._id !== allAdsData[0]._id)) {
-
-                console.log('🔄 New ads detected! Auto-refreshing...');
-                lastAdsCount = cacheData.ads.length;
-                allAdsData = cacheData.ads;
-
-                // Get current category from active filter
-                const activeFilter = document.querySelector('.category-card.active, .filter-btn.active');
-                const currentCategory = activeFilter ? activeFilter.dataset.category || 'all' : 'all';
-
-                // Update display silently
-                filterAndRender(cacheData.ads, currentCategory);
-                updateCategoryCounts(cacheData.ads);
-
-                // Save to localStorage
-                try {
-                    localStorage.setItem('cachedAllAds', JSON.stringify(cacheData.ads));
-                    localStorage.setItem('cachedAllAdsTime', Date.now().toString());
-                } catch (e) { }
-            }
-        } catch (e) {
-            // Silently fail - don't interrupt user
-        }
-    }, AUTO_REFRESH_INTERVAL);
-}
-
-// Start auto-refresh when page loads
-if (typeof window !== 'undefined') {
-    window.addEventListener('load', () => {
-        // Initialize lastAdsCount
-        lastAdsCount = allAdsData.length;
-        // Start auto-refresh after 30 seconds (give time for initial load)
-        setTimeout(startAutoRefresh, 30000);
-    });
-}
 
 function renderAds(ads) {
     const categoryIcons = {

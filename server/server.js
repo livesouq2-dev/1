@@ -16,9 +16,6 @@ const adsRoutes = require('./routes/ads');
 const adminRoutes = require('./routes/admin');
 const Ad = require('./models/Ad');
 
-// Import cache manager for pre-built JSON cache
-const { rebuildAdsCache, cacheExists } = require('./utils/cacheManager');
-
 const app = express();
 
 // ===== SECURITY MIDDLEWARE =====
@@ -308,15 +305,4 @@ app.listen(PORT, async () => {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 🛡️ الحماية: Helmet ✓ | Rate Limit ✓ | NoSQL Sanitize ✓
     `);
-
-    // Build ads cache on startup (after MongoDB is connected)
-    setTimeout(async () => {
-        try {
-            console.log('📦 Building initial ads cache...');
-            await rebuildAdsCache();
-            console.log('✅ Initial ads cache ready!');
-        } catch (err) {
-            console.error('⚠️ Could not build initial cache:', err.message);
-        }
-    }, 3000); // Wait 3 seconds for MongoDB to be ready
 });

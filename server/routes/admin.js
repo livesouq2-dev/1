@@ -8,9 +8,6 @@ const Prices = require('../models/Prices');
 // Import cache from ads routes to invalidate when admin makes changes
 const { cache: adsCache } = require('./ads');
 
-// Import cache manager for rebuilding ads-cache.json
-const { rebuildAdsCache } = require('../utils/cacheManager');
-
 // Admin auth middleware
 const adminAuth = async (req, res, next) => {
     try {
@@ -129,9 +126,6 @@ router.patch('/ads/:id/approve', adminAuth, async (req, res) => {
         // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
 
-        // Rebuild static JSON cache (async, don't wait)
-        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
-
         res.json({ message: 'تم قبول الإعلان', ad });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -152,9 +146,6 @@ router.patch('/ads/:id/reject', adminAuth, async (req, res) => {
 
         // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
-
-        // Rebuild static JSON cache
-        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
 
         res.json({ message: 'تم رفض الإعلان', ad });
     } catch (error) {
@@ -186,9 +177,6 @@ router.put('/ads/:id', adminAuth, async (req, res) => {
         // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
 
-        // Rebuild static JSON cache
-        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
-
         res.json({ message: 'تم تعديل الإعلان', ad });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -202,9 +190,6 @@ router.delete('/ads/:id', adminAuth, async (req, res) => {
 
         // Invalidate memory cache
         if (adsCache) adsCache.invalidateAll();
-
-        // Rebuild static JSON cache
-        rebuildAdsCache().catch(err => console.error('Cache rebuild error:', err));
 
         res.json({ message: 'تم حذف الإعلان' });
     } catch (error) {
@@ -256,25 +241,6 @@ router.post('/setup', async (req, res) => {
             email: adminEmail
             // Password NOT returned for security
         });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// ===== MANUAL CACHE REBUILD =====
-
-// Rebuild ads cache manually (admin)
-router.post('/rebuild-cache', adminAuth, async (req, res) => {
-    try {
-        const result = await rebuildAdsCache();
-        if (result.success) {
-            res.json({
-                message: `✅ تم إعادة بناء الـ cache بنجاح! (${result.count} إعلان)`,
-                count: result.count
-            });
-        } else {
-            res.status(500).json({ message: '❌ فشل في بناء الـ cache: ' + result.error });
-        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
