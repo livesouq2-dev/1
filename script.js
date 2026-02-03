@@ -823,6 +823,60 @@ function refreshAds() {
     loadAds('all');
 }
 
+// ===== AUTO-REFRESH: Check for new ads every 3 minutes =====
+const AUTO_REFRESH_INTERVAL = 3 * 60 * 1000; // 3 minutes
+let lastAdsCount = 0;
+
+function startAutoRefresh() {
+    setInterval(async () => {
+        try {
+            // Fetch the JSON cache silently
+            const res = await fetch('/public/ads-cache.json?t=' + Date.now(), {
+                cache: 'no-store'
+            });
+            if (!res.ok) return;
+
+            const cacheData = await res.json();
+            if (!cacheData.ads || cacheData.ads.length === 0) return;
+
+            // Check if there are new ads
+            if (cacheData.ads.length !== lastAdsCount ||
+                (allAdsData.length > 0 && cacheData.ads[0]._id !== allAdsData[0]._id)) {
+
+                console.log('🔄 New ads detected! Auto-refreshing...');
+                lastAdsCount = cacheData.ads.length;
+                allAdsData = cacheData.ads;
+
+                // Get current category from active filter
+                const activeFilter = document.querySelector('.category-card.active, .filter-btn.active');
+                const currentCategory = activeFilter ? activeFilter.dataset.category || 'all' : 'all';
+
+                // Update display silently
+                filterAndRender(cacheData.ads, currentCategory);
+                updateCategoryCounts(cacheData.ads);
+
+                // Save to localStorage
+                try {
+                    localStorage.setItem('cachedAllAds', JSON.stringify(cacheData.ads));
+                    localStorage.setItem('cachedAllAdsTime', Date.now().toString());
+                } catch (e) { }
+            }
+        } catch (e) {
+            // Silently fail - don't interrupt user
+        }
+    }, AUTO_REFRESH_INTERVAL);
+}
+
+// Start auto-refresh when page loads
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', () => {
+        // Initialize lastAdsCount
+        lastAdsCount = allAdsData.length;
+        // Start auto-refresh after 30 seconds (give time for initial load)
+        setTimeout(startAutoRefresh, 30000);
+    });
+}
+
 function renderAds(ads) {
     const categoryIcons = {
         home: '📱',
