@@ -18,6 +18,9 @@ const Ad = require('./models/Ad');
 
 const app = express();
 
+// Trust proxy - Required for Render (behind proxy) to make rate-limit work correctly
+app.set('trust proxy', 1);
+
 // ===== SECURITY MIDDLEWARE =====
 
 // 1. Helmet - Security HTTP Headers
