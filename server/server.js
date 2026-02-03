@@ -30,11 +30,25 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://pagead2.googlesyndication.com"],
+            scriptSrc: [
+                "'self'", "'unsafe-inline'", "'unsafe-eval'",
+                "https://pagead2.googlesyndication.com",
+                "https://googleads.g.doubleclick.net",
+                "https://www.googletagservices.com",
+                "https://adservice.google.com",
+                "https://ep2.adtrafficquality.google",
+                "https://*.googlesyndication.com"
+            ],
             scriptSrcAttr: ["'unsafe-inline'"], // Allow onclick handlers in HTML
             imgSrc: ["'self'", "data:", "blob:", "https:"],
             connectSrc: ["'self'", "https:"],
-            frameSrc: ["'self'", "https://pagead2.googlesyndication.com"],
+            frameSrc: [
+                "'self'",
+                "https://pagead2.googlesyndication.com",
+                "https://googleads.g.doubleclick.net",
+                "https://tpc.googlesyndication.com",
+                "https://*.googlesyndication.com"
+            ],
         }
     },
     crossOriginEmbedderPolicy: false,
