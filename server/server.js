@@ -266,8 +266,9 @@ mongoose.connect(MONGODB_URI, {
     // Connection Pool settings for better performance
     maxPoolSize: 50,           // Max connections in pool
     minPoolSize: 10,           // Min connections to keep
-    serverSelectionTimeoutMS: 5000,  // Faster server selection
-    socketTimeoutMS: 45000,    // Socket timeout
+    serverSelectionTimeoutMS: 30000,  // 30 seconds for server selection
+    connectTimeoutMS: 30000,   // 30 seconds connection timeout
+    socketTimeoutMS: 60000,    // 60 seconds socket timeout
     // Security options
     retryWrites: true,
     w: 'majority'
