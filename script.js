@@ -499,8 +499,9 @@ function showAdDetail(adId) {
     openModal('adDetailModal');
 }
 
-// ===== Helper: Compress and Convert Image to Base64 - OPTIMIZED =====
-function compressImageHelper(file, maxWidth = 600, quality = 0.5) {
+// ===== Helper: Compress and Convert Image to Base64 - ULTRA OPTIMIZED =====
+// Aggressive compression for fast loading on slow connections
+function compressImageHelper(file, maxWidth = 500, quality = 0.4) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -512,24 +513,40 @@ function compressImageHelper(file, maxWidth = 600, quality = 0.5) {
                 let width = img.width;
                 let height = img.height;
 
-                // Resize if larger than maxWidth - more aggressive
-                if (width > maxWidth) {
-                    height = (height * maxWidth) / width;
-                    width = maxWidth;
-                }
-                if (height > maxWidth) {
-                    width = (width * maxWidth) / height;
-                    height = maxWidth;
+                // Aggressive resize - max 500px any dimension
+                const maxDimension = maxWidth;
+                if (width > height && width > maxDimension) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
                 }
 
                 canvas.width = width;
                 canvas.height = height;
 
                 const ctx = canvas.getContext('2d');
+                // Use better image smoothing
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Convert to compressed JPEG - 50% quality for fast loading
-                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                // Convert to WebP if supported (smaller), fallback to JPEG
+                let compressedBase64;
+                if (canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0) {
+                    compressedBase64 = canvas.toDataURL('image/webp', quality);
+                } else {
+                    compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                }
+
+                // Log compression result (dev only)
+                if (window.location.hostname === 'localhost') {
+                    const originalSize = Math.round(file.size / 1024);
+                    const compressedSize = Math.round((compressedBase64.length * 3 / 4) / 1024);
+                    console.log(`📦 Image: ${originalSize}KB → ${compressedSize}KB (${Math.round((1 - compressedSize / originalSize) * 100)}% smaller)`);
+                }
+
                 resolve(compressedBase64);
             };
             img.onerror = reject;
