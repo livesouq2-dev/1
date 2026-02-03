@@ -261,6 +261,25 @@ router.post('/setup', async (req, res) => {
     }
 });
 
+// ===== MANUAL CACHE REBUILD =====
+
+// Rebuild ads cache manually (admin)
+router.post('/rebuild-cache', adminAuth, async (req, res) => {
+    try {
+        const result = await rebuildAdsCache();
+        if (result.success) {
+            res.json({
+                message: `✅ تم إعادة بناء الـ cache بنجاح! (${result.count} إعلان)`,
+                count: result.count
+            });
+        } else {
+            res.status(500).json({ message: '❌ فشل في بناء الـ cache: ' + result.error });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // ===== PRICES MANAGEMENT =====
 
 // Get current prices (admin)

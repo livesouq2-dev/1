@@ -351,9 +351,13 @@
     <div id="dashboardSection" class="admin-container hidden">
         <div class="admin-header">
             <h1 class="admin-title">📊 لوحة التحكم</h1>
-            <div class="contact-info">
-                <span>📞 رقم التواصل للعمولة:</span>
-                <span class="phone">+961 71 163 211</span>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button class="btn btn-outline" onclick="rebuildCache()" title="إعادة بناء الـ cache للإعلانات">🔄 تحديث
+                    الـ Cache</button>
+                <div class="contact-info" style="margin: 0;">
+                    <span>📞 رقم التواصل للعمولة:</span>
+                    <span class="phone">+961 71 163 211</span>
+                </div>
             </div>
         </div>
 
@@ -1088,6 +1092,24 @@
                 alert('خطأ في الاتصال بالسيرفر');
             }
         });
+
+        // ===== REBUILD CACHE =====
+        async function rebuildCache() {
+            if (!confirm('هل تريد إعادة بناء الـ cache للإعلانات؟')) return;
+
+            try {
+                const res = await fetch('/api/admin/rebuild-cache', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('adminToken')
+                    }
+                });
+                const result = await res.json();
+                alert(result.message);
+            } catch (e) {
+                alert('❌ خطأ في الاتصال بالسيرفر');
+            }
+        }
     </script>
 </body>
 
