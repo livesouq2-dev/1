@@ -278,16 +278,17 @@ if (!MONGODB_URI) {
     process.exit(1);
 }
 
-// MongoDB Connection with optimized settings
+// MongoDB Connection - optimized for Free Tier
 mongoose.connect(MONGODB_URI, {
-    // Connection Pool settings for better performance
-    maxPoolSize: 50,           // Max connections in pool
-    minPoolSize: 10,           // Min connections to keep
-    serverSelectionTimeoutMS: 30000,  // 30 seconds for server selection
-    connectTimeoutMS: 30000,   // 30 seconds connection timeout
-    socketTimeoutMS: 60000,    // 60 seconds socket timeout
-    // Security options
+    // REDUCED for Free Tier - only 5 connections max
+    maxPoolSize: 5,
+    minPoolSize: 1,
+    serverSelectionTimeoutMS: 10000,  // 10 seconds
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    // Retry options
     retryWrites: true,
+    retryReads: true,
     w: 'majority'
 });
 
