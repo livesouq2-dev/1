@@ -137,6 +137,40 @@ const auth = async (req, res, next) => {
     }
 };
 
+// ===== FAST CACHE ENDPOINT - Returns all cached ads instantly =====
+// This is used by frontend for instant loading (works on cloud platforms like Render)
+router.get('/cache', async (req, res) => {
+    try {
+        // If cache is valid, return it immediately
+        if (cache.isValid('ads') && cache.ads && cache.ads.length > 0) {
+            console.log('⚡ Serving instant cache');
+            return res.json({
+                ads: cache.ads,
+                updatedAt: new Date(cache.adsTime).toISOString(),
+                count: cache.ads.length,
+                fromCache: true
+            });
+        }
+
+        // Cache is empty or expired, refresh it
+        const ads = await updateCacheFile();
+        if (ads && ads.length > 0) {
+            return res.json({
+                ads: ads,
+                updatedAt: new Date().toISOString(),
+                count: ads.length,
+                fromCache: false
+            });
+        }
+
+        // No ads found
+        res.json({ ads: [], count: 0 });
+    } catch (error) {
+        console.error('❌ Cache endpoint error:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get all approved ads (public) - WITH CACHE
 router.get('/', async (req, res) => {
     try {

@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '3.1.0'; // PERSISTENT JSON CACHE - all ads load instantly!
+const APP_VERSION = '3.2.0'; // CACHE API - works on cloud platforms!
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -704,12 +704,12 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         delete window.__INITIAL_ADS__;
     }
 
-    // ===== STEP 1.5: LOAD FROM JSON CACHE FILE (INSTANT!) =====
-    // This file is updated by admin on every approve/reject/edit/delete
+    // ===== STEP 1.5: LOAD FROM CACHE API (INSTANT!) =====
+    // This API returns cached ads from server memory (works on cloud platforms)
     if (!hasCachedData) {
         try {
-            const cacheResponse = await fetch('/public/ads-cache.json', {
-                cache: 'no-cache' // Always get fresh cache file
+            const cacheResponse = await fetch(`${API}/api/ads/cache`, {
+                headers: { 'Accept': 'application/json' }
             });
             if (cacheResponse.ok) {
                 const cacheData = await cacheResponse.json();
@@ -725,13 +725,13 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
                         localStorage.setItem(cacheTimeKey, Date.now().toString());
                     } catch (e) { /* localStorage full */ }
 
-                    console.log(`📦 Loaded ${cacheData.ads.length} ads from cache file`);
-                    return; // All ads loaded, no need to fetch from API
+                    console.log(`📦 Loaded ${cacheData.ads.length} ads from cache`);
+                    return; // All ads loaded, no need to fetch from main API
                 }
             }
         } catch (e) {
-            // Cache file not available, continue with other methods
-            console.log('📦 Cache file not available, loading from API...');
+            // Cache API not available, continue with other methods
+            console.log('📦 Cache API not available, loading from main API...');
         }
     }
 
