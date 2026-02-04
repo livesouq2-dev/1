@@ -6,7 +6,7 @@ const User = require('../models/User');
 const Prices = require('../models/Prices');
 
 // Import cache from ads routes to invalidate when admin makes changes
-const { cache: adsCache } = require('./ads');
+const { cache: adsCache, updateCacheFile } = require('./ads');
 
 // Admin auth middleware
 const adminAuth = async (req, res, next) => {
@@ -123,8 +123,8 @@ router.patch('/ads/:id/approve', adminAuth, async (req, res) => {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
 
-        // Invalidate memory cache
-        if (adsCache) adsCache.invalidateAll();
+        // Update cache file with new ad
+        updateCacheFile();
 
         res.json({ message: 'تم قبول الإعلان', ad });
     } catch (error) {
@@ -144,8 +144,8 @@ router.patch('/ads/:id/reject', adminAuth, async (req, res) => {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
 
-        // Invalidate memory cache
-        if (adsCache) adsCache.invalidateAll();
+        // Update cache file (ad removed from approved)
+        updateCacheFile();
 
         res.json({ message: 'تم رفض الإعلان', ad });
     } catch (error) {
@@ -174,8 +174,8 @@ router.put('/ads/:id', adminAuth, async (req, res) => {
             return res.status(404).json({ message: 'الإعلان غير موجود' });
         }
 
-        // Invalidate memory cache
-        if (adsCache) adsCache.invalidateAll();
+        // Update cache file with edited ad
+        updateCacheFile();
 
         res.json({ message: 'تم تعديل الإعلان', ad });
     } catch (error) {
@@ -188,8 +188,8 @@ router.delete('/ads/:id', adminAuth, async (req, res) => {
     try {
         await Ad.findByIdAndDelete(req.params.id);
 
-        // Invalidate memory cache
-        if (adsCache) adsCache.invalidateAll();
+        // Update cache file (ad deleted)
+        updateCacheFile();
 
         res.json({ message: 'تم حذف الإعلان' });
     } catch (error) {

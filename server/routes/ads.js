@@ -43,6 +43,82 @@ const cache = {
     }
 };
 
+// ===== Persistent JSON Cache for INSTANT Loading =====
+const fs = require('fs');
+const path = require('path');
+const CACHE_FILE_PATH = path.join(__dirname, '..', '..', 'public', 'ads-cache.json');
+
+// Ensure public directory exists
+const publicDir = path.join(__dirname, '..', '..', 'public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+}
+
+// Update the cache file with all approved ads
+async function updateCacheFile() {
+    try {
+        const Ad = require('../models/Ad');
+
+        // Fetch all approved ads
+        const ads = await Ad.find({ status: 'approved' })
+            .select('title description category subCategory price location whatsapp isFeatured createdAt images jobType jobExperience')
+            .populate('user', 'name')
+            .sort({ isFeatured: -1, createdAt: -1 })
+            .limit(200)
+            .lean();
+
+        // Update memory cache too
+        cache.set('ads', ads);
+
+        // Write to file (async, non-blocking)
+        const cacheData = {
+            ads: ads,
+            updatedAt: new Date().toISOString(),
+            count: ads.length
+        };
+
+        fs.writeFile(CACHE_FILE_PATH, JSON.stringify(cacheData), 'utf8', (err) => {
+            if (err) {
+                console.error('❌ Error writing cache file:', err.message);
+            } else {
+                console.log(`✅ Cache file updated: ${ads.length} ads saved`);
+            }
+        });
+
+        return ads;
+    } catch (error) {
+        console.error('❌ Error updating cache file:', error.message);
+        return null;
+    }
+}
+
+// Initialize cache file on startup
+async function initializeCacheFile() {
+    try {
+        // Check if file exists and is recent (less than 5 minutes old)
+        if (fs.existsSync(CACHE_FILE_PATH)) {
+            const stats = fs.statSync(CACHE_FILE_PATH);
+            const age = Date.now() - stats.mtimeMs;
+            if (age < 5 * 60 * 1000) {
+                console.log('📦 Cache file exists and is fresh');
+                // Load into memory cache
+                const data = JSON.parse(fs.readFileSync(CACHE_FILE_PATH, 'utf8'));
+                if (data.ads) {
+                    cache.set('ads', data.ads);
+                    console.log(`📦 Loaded ${data.ads.length} ads into memory cache`);
+                }
+                return;
+            }
+        }
+
+        // Create/update cache file
+        console.log('📦 Initializing cache file...');
+        await updateCacheFile();
+    } catch (error) {
+        console.error('❌ Error initializing cache:', error.message);
+    }
+}
+
 // Auth middleware
 const auth = async (req, res, next) => {
     try {
@@ -296,3 +372,5 @@ router.delete('/:id', auth, async (req, res) => {
 // Export router and cache for use in admin routes
 module.exports = router;
 module.exports.cache = cache;
+module.exports.updateCacheFile = updateCacheFile;
+module.exports.initializeCacheFile = initializeCacheFile;

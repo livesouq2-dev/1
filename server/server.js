@@ -293,8 +293,16 @@ mongoose.connect(MONGODB_URI, {
 });
 
 // MongoDB connection event handlers
-mongoose.connection.on('connected', () => {
+mongoose.connection.on('connected', async () => {
     console.log('✅ تم الاتصال بقاعدة البيانات MongoDB بشكل آمن');
+
+    // Initialize ads cache file for instant loading
+    try {
+        const { initializeCacheFile } = require('./routes/ads');
+        await initializeCacheFile();
+    } catch (error) {
+        console.error('⚠️ Cache init error:', error.message);
+    }
 });
 
 mongoose.connection.on('error', (err) => {

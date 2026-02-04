@@ -1,7 +1,7 @@
 // ===== API Configuration =====
 const API = '';  // Empty for same origin, or 'http://localhost:3000' for dev* 
 const ADMIN_PHONE = '+961 71 163 211';
-const APP_VERSION = '3.0.0'; // PRE-BUILT JSON CACHE - instant loading!
+const APP_VERSION = '3.1.0'; // PERSISTENT JSON CACHE - all ads load instantly!
 
 // ===== Automatic Cache Management =====
 // This runs immediately and silently clears outdated cache for all users
@@ -704,7 +704,36 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         delete window.__INITIAL_ADS__;
     }
 
-    // JSON cache removed - using direct API loading
+    // ===== STEP 1.5: LOAD FROM JSON CACHE FILE (INSTANT!) =====
+    // This file is updated by admin on every approve/reject/edit/delete
+    if (!hasCachedData) {
+        try {
+            const cacheResponse = await fetch('/public/ads-cache.json', {
+                cache: 'no-cache' // Always get fresh cache file
+            });
+            if (cacheResponse.ok) {
+                const cacheData = await cacheResponse.json();
+                if (cacheData.ads && cacheData.ads.length > 0) {
+                    hasCachedData = true;
+                    allAdsData = cacheData.ads;
+                    filterAndRender(cacheData.ads, category, subCategory);
+                    updateCategoryCounts(cacheData.ads);
+
+                    // Save to localStorage for offline use
+                    try {
+                        localStorage.setItem(cacheKey, JSON.stringify(cacheData.ads));
+                        localStorage.setItem(cacheTimeKey, Date.now().toString());
+                    } catch (e) { /* localStorage full */ }
+
+                    console.log(`📦 Loaded ${cacheData.ads.length} ads from cache file`);
+                    return; // All ads loaded, no need to fetch from API
+                }
+            }
+        } catch (e) {
+            // Cache file not available, continue with other methods
+            console.log('📦 Cache file not available, loading from API...');
+        }
+    }
 
     // ===== STEP 2: SHOW CACHED ADS (even if old) =====
     let cacheIsFresh = false;
