@@ -121,15 +121,29 @@ app.use(cors({
     maxAge: 86400 // Cache preflight for 24 hours
 }));
 
-// 5.5 Redirect old domain to new domain (301 Permanent Redirect for SEO)
+// 5.5 FORCE Redirect old domain to custom domain (Critical for SEO!)
+// This ensures Google indexes badelwbi3.com NOT the Render URL
 app.use((req, res, next) => {
     const host = req.get('host');
-    // Redirect from old onrender.com domain to new custom domain
-    if (host && (host.includes('onrender.com') || host.includes('w-bi3.onrender.com'))) {
+
+    // Redirect from ANY onrender.com domain to custom domain
+    if (host && host.includes('onrender.com')) {
         const newUrl = `https://badelwbi3.com${req.originalUrl}`;
-        console.log(`🔄 Redirecting from ${host} to badelwbi3.com`);
-        return res.redirect(301, newUrl);
+
+        // Add headers to tell Google this is permanent
+        res.set('X-Robots-Tag', 'noindex, nofollow');
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Location', newUrl);
+
+        console.log(`🔄 SEO Redirect: ${host} → badelwbi3.com`);
+        return res.status(301).end();
     }
+
+    // For the main domain, ensure canonical is set
+    if (host && (host.includes('badelwbi3.com') || host === 'localhost:3000')) {
+        res.set('Link', '<https://badelwbi3.com/>; rel="canonical"');
+    }
+
     next();
 });
 
