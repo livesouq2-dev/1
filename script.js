@@ -927,7 +927,7 @@ function renderAds(ads) {
 }
 
 function updateCategoryCounts(ads) {
-    const counts = { home: 0, cars: 0, realestate: 0, services: 0, jobs: 0 };
+    const counts = { home: 0, cars: 0, realestate: 0, services: 0, jobs: 0, donations: 0 };
     ads.forEach(ad => {
         if (counts[ad.category] !== undefined) counts[ad.category]++;
     });
@@ -936,6 +936,7 @@ function updateCategoryCounts(ads) {
     document.getElementById('countRealestate').textContent = `${counts.realestate} إعلان`;
     document.getElementById('countServices').textContent = `${counts.services} إعلان`;
     document.getElementById('countJobs').textContent = `${counts.jobs} إعلان`;
+    document.getElementById('countDonations').textContent = `${counts.donations} إعلان`;
 }
 
 // ===== Modal Functions =====
