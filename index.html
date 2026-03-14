@@ -49,7 +49,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Structured Data (Schema.org) -->
@@ -101,7 +101,7 @@
                     <li><a href="#home">الرئيسية</a></li>
                     <li><a href="#categories">الفئات</a></li>
                     <li><a href="#listings">الإعلانات</a></li>
-                    <li><a href="#subscriptions">الاشتراكات</a></li>
+                    <li><a href="#how-it-works">كيف يعمل</a></li>
                     <li><a href="https://wa.me/96171163211?text=مرحباً، أريد التواصل معكم" target="_blank"
                             class="contact-link">📞 اتصل بنا</a></li>
                     <li><a href="#" id="navProfileBtn" class="profile-link">👤 حسابي</a></li>
@@ -121,35 +121,79 @@
     </header>
 
     <section class="hero" id="home">
-        <div class="hero-bg"></div>
-        <!-- Ramadan Floating Decorations -->
-        <div class="ramadan-decorations">
-            <span class="ramadan-deco deco-lantern-1">🏮</span>
-            <span class="ramadan-deco deco-lantern-2">🏮</span>
-            <span class="ramadan-deco deco-star-1">✨</span>
-            <span class="ramadan-deco deco-star-2">⭐</span>
-            <span class="ramadan-deco deco-star-3">✨</span>
-            <span class="ramadan-deco deco-star-4">⭐</span>
-            <span class="ramadan-deco deco-mosque">🕌</span>
+        <div class="hero-bg">
+            <div class="hero-blob blob-1"></div>
+            <div class="hero-blob blob-2"></div>
+            <div class="hero-blob blob-3"></div>
+            <div class="hero-grid-pattern"></div>
         </div>
         <div class="container">
             <div class="hero-content">
-                <!-- Ramadan Kareem Banner -->
-                <div class="ramadan-banner">
-                    <span class="ramadan-icon">🌙</span>
-                    <span class="ramadan-text">رمضان كريم 🕌</span>
-                    <span class="ramadan-icon">⭐</span>
+                <div class="badge animate-fadeInUp">🚀 منصة لبنان الأولى للبيع والشراء</div>
+                <h1 class="hero-title">
+                    <span class="hero-line">بيع واشتري</span>
+                    <span class="hero-line gradient-text">بدون أيّ وسيط!</span>
+                </h1>
+                <p class="hero-desc">انشر إعلانك بثواني، تواصل مباشرة مع المشتري، بدون عمولات أو رسوم خفية.</p>
+                
+                <!-- Floating Search - Redesigned -->
+                <div class="search-floating" id="searchFloating">
+                    <div class="search-floating-inner">
+                        <div class="search-icon-wrap">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="ابحث عن سيارة، شقة، هاتف، وظيفة..." autocomplete="off">
+                        <button class="search-go-btn" id="searchBtn">
+                            <span>بحث</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <div class="search-divider">
+                        <span class="search-divider-line"></span>
+                        <span class="search-divider-text">أو تصفح حسب الفئة 👇</span>
+                        <span class="search-divider-line"></span>
+                    </div>
+                    <div class="search-cats">
+                        <button class="search-cat-btn scat-blue" data-cat="home">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                            <span>المنتجات</span>
+                        </button>
+                        <button class="search-cat-btn scat-purple" data-cat="cars">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7L5 12v5z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>
+                            <span>سيارات</span>
+                        </button>
+                        <button class="search-cat-btn scat-emerald" data-cat="realestate">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
+                            <span>عقارات</span>
+                        </button>
+                        <button class="search-cat-btn scat-amber" data-cat="services">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            <span>خدمات</span>
+                        </button>
+                        <button class="search-cat-btn scat-cyan" data-cat="jobs">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                            <span>وظائف</span>
+                        </button>
+                        <button class="search-cat-btn scat-rose" data-cat="donations">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            <span>تبرعات</span>
+                        </button>
+                    </div>
                 </div>
-                <h1>بيع واشتري بسهولة<br><span class="gradient-text">بدون أيّ وسيط!</span></h1>
-                <p>منصة عربية حديثة للبيع والشراء المحلي. انشر إعلانك بثواني، تواصل مباشرة، بدون عمولات.</p>
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 ابحث عن منتج، سيارة، عقار...">
-                    <button class="btn btn-primary" id="searchBtn">بحث</button>
-                </div>
+
                 <div class="hero-stats" id="heroStats">
-                    <div class="stat"><span id="statAds">0</span><small>إعلان</small></div>
-                    <div class="stat"><span id="statUsers">0</span><small>مستخدم</small></div>
-                    <div class="stat"><span>6</span><small>فئات</small></div>
+                    <div class="stat">
+                        <span id="statAds">0</span>
+                        <small>إعلان نشط</small>
+                    </div>
+                    <div class="stat">
+                        <span id="statUsers">0</span>
+                        <small>مستخدم مسجّل</small>
+                    </div>
+                    <div class="stat">
+                        <span>6</span>
+                        <small>فئات متنوعة</small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -211,39 +255,64 @@
     <section class="categories" id="categories">
         <div class="container">
             <div class="section-header">
-                <span class="section-badge">📍 الفئات</span>
-                <h2>شو فيك تبيع أو تشتري؟</h2>
+                <span class="section-badge">🔥 تصفح الفئات</span>
+                <h2>اكتشف ما تبحث عنه</h2>
+                <p class="section-desc">اختر الفئة المناسبة وابدأ رحلة البيع والشراء</p>
             </div>
             <div class="categories-grid">
                 <div class="category-card" data-cat="home">
-                    <div class="icon">📱</div>
+                    <div class="cat-icon-circle cat-blue">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+                        </svg>
+                    </div>
                     <h3>المنتجات والأجهزة</h3>
-                    <p id="countHome">0 إعلان</p>
+                    <p class="cat-count" id="countHome">0 إعلان</p>
                 </div>
                 <div class="category-card" data-cat="cars">
-                    <div class="icon">🚗</div>
+                    <div class="cat-icon-circle cat-purple">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 17h14v-5l-2-5H7L5 12v5z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 12h14"/>
+                        </svg>
+                    </div>
                     <h3>سيارات</h3>
-                    <p id="countCars">0 إعلان</p>
+                    <p class="cat-count" id="countCars">0 إعلان</p>
                 </div>
                 <div class="category-card" data-cat="realestate">
-                    <div class="icon">🏗️</div>
+                    <div class="cat-icon-circle cat-emerald">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/>
+                        </svg>
+                    </div>
                     <h3>أراضي وعقارات</h3>
-                    <p id="countRealestate">0 إعلان</p>
+                    <p class="cat-count" id="countRealestate">0 إعلان</p>
                 </div>
                 <div class="category-card" data-cat="services">
-                    <div class="icon">🔧</div>
+                    <div class="cat-icon-circle cat-amber">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                    </div>
                     <h3>خدمات</h3>
-                    <p id="countServices">0 إعلان</p>
+                    <p class="cat-count" id="countServices">0 إعلان</p>
                 </div>
                 <div class="category-card" data-cat="jobs">
-                    <div class="icon">💼</div>
+                    <div class="cat-icon-circle cat-cyan">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12.01"/><path d="M2 12h20"/>
+                        </svg>
+                    </div>
                     <h3>فرص العمل</h3>
-                    <p id="countJobs">0 إعلان</p>
+                    <p class="cat-count" id="countJobs">0 إعلان</p>
                 </div>
-                <div class="category-card donation-card" data-cat="donations">
-                    <div class="icon">💝</div>
+                <div class="category-card" data-cat="donations">
+                    <div class="cat-icon-circle cat-rose">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><path d="M12 13v4"/><path d="M10 15h4"/>
+                        </svg>
+                    </div>
                     <h3>تبرعات</h3>
-                    <p id="countDonations">0 إعلان</p>
+                    <p class="cat-count" id="countDonations">0 إعلان</p>
                 </div>
             </div>
         </div>
@@ -252,8 +321,9 @@
     <section class="listings" id="listings">
         <div class="container">
             <div class="section-header">
-                <span class="section-badge">⭐ إعلانات مميزة</span>
-                <h2>أحدث الإعلانات</h2>
+                <span class="section-badge">🛍️ أحدث العروض</span>
+                <h2>إعلانات جديدة كل يوم</h2>
+                <p class="section-desc">تصفّح أحدث الإعلانات واعثر على ما تبحث عنه</p>
             </div>
             <div class="tabs">
                 <button class="tab active" data-tab="all">الكل</button>
@@ -345,46 +415,7 @@
         </div>
     </div>
 
-    <section class="subscriptions" id="subscriptions">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-badge">👤 الاشتراكات</span>
-                <h2>اختر خطتك</h2>
-            </div>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <div class="pricing-icon">📝</div>
-                    <h3>عادية</h3>
-                    <p class="plan-desc">مع عمولة بسيطة</p>
-                    <div class="price price-large"><span>$0</span>/شهر</div>
-                    <ul>
-                        <li>✓ إعلانات غير محدودة</li>
-                        <li>✓ ظهور عادي</li>
-                        <li>✓ تواصل مباشر</li>
-                        <li class="disabled">✗ إعلان مميز</li>
-                    </ul>
-                    <a href="https://wa.me/96171163211?text=مرحباً، أريد الاشتراك في الباقة المجانية" target="_blank"
-                        class="btn btn-outline">ابدأ مجانًا</a>
-                </div>
-                <div class="pricing-card featured">
-                    <div class="popular">الأكثر شعبية</div>
-                    <div class="pricing-icon">⭐</div>
-                    <h3>ذهبية</h3>
-                    <p class="plan-desc gold">بدون عمولات</p>
-                    <div class="price price-large"><span>$14.99</span>/شهر</div>
-                    <ul>
-                        <li>✓ 10 إعلان بالشهر</li>
-                        <li>✓ ظهور أقوى</li>
-                        <li>✓ وصول أسرع للزبائن</li>
-                        <li>✓ إعلانات مميزة</li>
-                    </ul>
-                    <a href="https://wa.me/96171163211?text=مرحباً، أريد الاشتراك في الباقة الذهبية ($14.99/شهر)"
-                        target="_blank" class="btn btn-primary">اشترك الآن</a>
-                </div>
-            </div>
-            <p class="payment-note">💰 الدفع سريع وآمن عبر <strong>Wish Money</strong> و <strong>OMT</strong></p>
-        </div>
-    </section>
+    <!-- Subscriptions section removed -->
 
     <section class="how-it-works" id="how-it-works">
         <div class="container">
@@ -648,9 +679,9 @@
             <span class="bottom-nav-icon">🏠</span>
             <span class="bottom-nav-label">الرئيسية</span>
         </a>
-        <a href="#subscriptions" class="bottom-nav-item">
-            <span class="bottom-nav-icon">⭐</span>
-            <span class="bottom-nav-label">الاشتراكات</span>
+        <a href="#categories" class="bottom-nav-item">
+            <span class="bottom-nav-icon">📂</span>
+            <span class="bottom-nav-label">الفئات</span>
         </a>
         <button class="bottom-nav-item bottom-nav-add" id="bottomAddBtn">
             <span class="bottom-nav-icon">➕</span>

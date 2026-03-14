@@ -59,7 +59,7 @@ let token = localStorage.getItem('token');
 let currentUser = null;
 
 // ===== Theme Management =====
-const savedTheme = localStorage.getItem('theme') || 'dark';
+const savedTheme = localStorage.getItem('theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
 function toggleTheme() {
@@ -1049,6 +1049,15 @@ function setupEventListeners() {
     document.querySelectorAll('.category-card').forEach(card => {
         card.addEventListener('click', () => {
             const cat = card.dataset.cat;
+            document.querySelector(`[data-tab="${cat}"]`)?.click();
+            document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Hero category quick-buttons
+    document.querySelectorAll('.search-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const cat = btn.dataset.cat;
             document.querySelector(`[data-tab="${cat}"]`)?.click();
             document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
         });
