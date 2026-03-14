@@ -83,8 +83,14 @@ function trackWhatsAppClick(adId) {
 // ===== Load Public Stats (Users & Ads count) =====
 async function loadStats() {
     try {
-        const res = await fetch(`${API}/api/ads/stats`);
-        const data = await res.json();
+        // Use embedded data if available (INSTANT - no API call!)
+        let data = window.__INITIAL_STATS__;
+        if (data) {
+            delete window.__INITIAL_STATS__;
+        } else {
+            const res = await fetch(`${API}/api/ads/stats`);
+            data = await res.json();
+        }
         const statUsers = document.getElementById('statUsers');
         const statAds = document.getElementById('statAds');
         if (statUsers && data.totalUsers) statUsers.textContent = data.totalUsers;
@@ -97,23 +103,28 @@ async function loadStats() {
 // ===== Load Gold, Silver & Dollar Prices from Backend =====
 async function loadPrices() {
     try {
-        const res = await fetch(`${API}/api/ads/prices`);
-        if (res.ok) {
-            const data = await res.json();
+        // Use embedded data if available (INSTANT - no API call!)
+        let data = window.__INITIAL_PRICES__;
+        if (data) {
+            delete window.__INITIAL_PRICES__;
+        } else {
+            const res = await fetch(`${API}/api/ads/prices`);
+            if (!res.ok) throw new Error('Prices API failed');
+            data = await res.json();
+        }
 
-            // Update DOM with prices from database
-            document.getElementById('goldPrice').textContent = `$${data.goldOunce?.toLocaleString() || '--'}`;
-            document.getElementById('goldLiraPrice').textContent = `$${data.goldLira?.toLocaleString() || '--'}`;
-            document.getElementById('silverPrice').textContent = `$${data.silverOunce?.toLocaleString() || '--'}`;
-            document.getElementById('dollarPrice').textContent = `${data.dollarRate?.toLocaleString() || '--'} ل.ل`;
+        // Update DOM with prices
+        document.getElementById('goldPrice').textContent = `$${data.goldOunce?.toLocaleString() || '--'}`;
+        document.getElementById('goldLiraPrice').textContent = `$${data.goldLira?.toLocaleString() || '--'}`;
+        document.getElementById('silverPrice').textContent = `$${data.silverOunce?.toLocaleString() || '--'}`;
+        document.getElementById('dollarPrice').textContent = `${data.dollarRate?.toLocaleString() || '--'} ل.ل`;
 
-            // Update timestamp
-            if (data.updatedAt) {
-                const updateTime = new Date(data.updatedAt);
-                const timeStr = updateTime.toLocaleDateString('ar-LB') + ' ' +
-                    updateTime.toLocaleTimeString('ar-LB', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('pricesUpdate').textContent = `آخر تحديث: ${timeStr}`;
-            }
+        // Update timestamp
+        if (data.updatedAt) {
+            const updateTime = new Date(data.updatedAt);
+            const timeStr = updateTime.toLocaleDateString('ar-LB') + ' ' +
+                updateTime.toLocaleTimeString('ar-LB', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('pricesUpdate').textContent = `آخر تحديث: ${timeStr}`;
         }
     } catch (e) {
         console.log('Prices not available');
@@ -693,15 +704,24 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         { _id: 'p4', title: 'جاري التحميل...', description: 'يتم تحميل الإعلانات الآن', category: 'services', price: '---', location: 'لبنان', images: [], isPlaceholder: true }
     ];
 
-    // ===== STEP 1: CHECK FOR SERVER-EMBEDDED ADS (INSTANT!) =====
+    // ===== STEP 1: CHECK FOR SERVER-EMBEDDED ADS (INSTANT! ZERO API CALLS!) =====
     if (window.__INITIAL_ADS__ && window.__INITIAL_ADS__.length > 0) {
-        // Server embedded ads - show INSTANTLY
+        // Server embedded ALL ads - show INSTANTLY, skip ALL API calls!
         hasCachedData = true;
         allAdsData = window.__INITIAL_ADS__;
         filterAndRender(window.__INITIAL_ADS__, category, subCategory);
         updateCategoryCounts(window.__INITIAL_ADS__);
+
+        // Save to localStorage for offline/future instant loads
+        try {
+            localStorage.setItem('cachedAllAds', JSON.stringify(window.__INITIAL_ADS__));
+            localStorage.setItem('cachedAllAdsTime', Date.now().toString());
+        } catch (e) { /* storage full */ }
+
         // Clear the embedded data after first use
         delete window.__INITIAL_ADS__;
+        // ALL data is loaded — no need for ANY API call! 🚀
+        return;
     }
 
     // ===== STEP 1.5: LOAD FROM CACHE API (INSTANT!) =====

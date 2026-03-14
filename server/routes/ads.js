@@ -13,7 +13,7 @@ const cache = {
     statsTime: 0,
     prices: null,
     pricesTime: 0,
-    CACHE_DURATION: 2 * 60 * 1000,  // 2 minutes
+    CACHE_DURATION: 10 * 60 * 1000,  // 10 minutes (rocket speed!)
     STATS_CACHE: 5 * 60 * 1000,     // 5 minutes for stats
 
     isValid(key) {

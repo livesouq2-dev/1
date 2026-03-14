@@ -230,35 +230,87 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ads', adsRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve frontend with embedded initial ads for INSTANT loading
+// Serve frontend with ALL DATA EMBEDDED for ROCKET-SPEED loading
+// This embeds ads, stats, and prices directly into the HTML
+// so the browser needs ZERO API calls to display everything
 app.get('/', async (req, res) => {
     try {
-        // Get initial ads from cache or database (fast)
         const { cache } = require('./routes/ads');
-        let initialAds = [];
+        const Prices = require('./models/Prices');
+        const User = require('./models/User');
 
+        // Fetch all data in PARALLEL for speed
+        let adsPromise, statsPromise, pricesPromise;
+
+        // 1. ADS - from cache or DB
         if (cache.isValid && cache.isValid('ads') && cache.ads) {
-            initialAds = cache.ads.slice(0, 8); // First 8 ads from cache
+            adsPromise = Promise.resolve(cache.ads);
         } else {
-            // Fetch from DB if no cache
-            initialAds = await Ad.find({ status: 'approved' })
-                .select('title description category subCategory price location whatsapp isFeatured createdAt images')
+            adsPromise = Ad.find({ status: 'approved' })
+                .select('title description category subCategory price location whatsapp isFeatured createdAt images jobType jobExperience')
                 .populate('user', 'name')
                 .sort({ isFeatured: -1, createdAt: -1 })
-                .limit(8)
-                .lean();
+                .limit(200)
+                .lean()
+                .then(ads => {
+                    cache.set('ads', ads);
+                    return ads;
+                });
         }
+
+        // 2. STATS - from cache or DB
+        if (cache.isValid && cache.isValid('stats') && cache.stats) {
+            statsPromise = Promise.resolve(cache.stats);
+        } else {
+            statsPromise = Promise.all([
+                Ad.countDocuments({ status: 'approved' }),
+                User.countDocuments({ isActive: true })
+            ]).then(([totalAds, totalUsers]) => {
+                const stats = { totalAds, totalUsers };
+                cache.set('stats', stats);
+                return stats;
+            });
+        }
+
+        // 3. PRICES - from cache or DB
+        if (cache.isValid && cache.isValid('prices') && cache.prices) {
+            pricesPromise = Promise.resolve(cache.prices);
+        } else {
+            pricesPromise = Prices.getPrices().then(p => {
+                const prices = {
+                    goldOunce: p.goldOunce,
+                    goldLira: p.goldLira,
+                    silverOunce: p.silverOunce,
+                    dollarRate: p.dollarRate,
+                    updatedAt: p.updatedAt
+                };
+                cache.set('prices', prices);
+                return prices;
+            });
+        }
+
+        // Execute ALL queries in parallel
+        const [initialAds, stats, prices] = await Promise.all([
+            adsPromise, statsPromise, pricesPromise
+        ]);
 
         // Read HTML file
         const htmlPath = path.join(__dirname, '..', 'index.html');
         let html = fs.readFileSync(htmlPath, 'utf8');
 
-        // Inject initial ads data as JSON in script tag (before closing body)
-        const adsScript = `<script>window.__INITIAL_ADS__ = ${JSON.stringify(initialAds)};</script>`;
-        html = html.replace('</body>', adsScript + '</body>');
+        // Inject ALL data before closing body tag — ZERO API calls needed!
+        const embeddedScript = `<script>
+window.__INITIAL_ADS__ = ${JSON.stringify(initialAds)};
+window.__INITIAL_STATS__ = ${JSON.stringify(stats)};
+window.__INITIAL_PRICES__ = ${JSON.stringify(prices)};
+</script>`;
+        html = html.replace('</body>', embeddedScript + '</body>');
 
+        // Set aggressive caching headers for the HTML
+        res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
         res.send(html);
     } catch (error) {
+        console.error('SSR Error:', error.message);
         // Fallback: just send the HTML file
         res.sendFile(path.join(__dirname, '..', 'index.html'));
     }
