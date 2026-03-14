@@ -230,9 +230,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ads', adsRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve frontend with ALL DATA EMBEDDED for ROCKET-SPEED loading
-// This embeds ads, stats, and prices directly into the HTML
-// so the browser needs ZERO API calls to display everything
+// Serve frontend with LIGHTWEIGHT DATA EMBEDDED for INSTANT loading
+// Ads are embedded WITHOUT images (text only ~50KB instead of 50MB)
+// Images are loaded lazily by the client from /api/ads/cache
 app.get('/', async (req, res) => {
     try {
         const { cache } = require('./routes/ads');
@@ -294,19 +294,30 @@ app.get('/', async (req, res) => {
             adsPromise, statsPromise, pricesPromise
         ]);
 
+        // STRIP IMAGES from embedded data to keep HTML lightweight!
+        // Each base64 image can be 200-500KB. With 100 ads, that's 20-50MB.
+        // Instead, we embed only text data (~50KB) and load images lazily.
+        const lightAds = initialAds.map(ad => ({
+            ...ad,
+            images: ad.images && ad.images.length > 0
+                ? [`img_placeholder_${ad.images.length}`]  // Just store count
+                : []
+        }));
+
         // Read HTML file
         const htmlPath = path.join(__dirname, '..', 'index.html');
         let html = fs.readFileSync(htmlPath, 'utf8');
 
-        // Inject ALL data before closing body tag — ZERO API calls needed!
+        // Inject LIGHTWEIGHT data — text only, no images!
         const embeddedScript = `<script>
-window.__INITIAL_ADS__ = ${JSON.stringify(initialAds)};
+window.__INITIAL_ADS__ = ${JSON.stringify(lightAds)};
 window.__INITIAL_STATS__ = ${JSON.stringify(stats)};
 window.__INITIAL_PRICES__ = ${JSON.stringify(prices)};
+window.__ADS_HAVE_IMAGES__ = true;
 </script>`;
         html = html.replace('</body>', embeddedScript + '</body>');
 
-        // Set aggressive caching headers for the HTML
+        // Set caching headers
         res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
         res.send(html);
     } catch (error) {

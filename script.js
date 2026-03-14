@@ -704,23 +704,36 @@ async function loadAds(category = 'all', subCategory = null, retryCount = 0) {
         { _id: 'p4', title: 'جاري التحميل...', description: 'يتم تحميل الإعلانات الآن', category: 'services', price: '---', location: 'لبنان', images: [], isPlaceholder: true }
     ];
 
-    // ===== STEP 1: CHECK FOR SERVER-EMBEDDED ADS (INSTANT! ZERO API CALLS!) =====
+    // ===== STEP 1: CHECK FOR SERVER-EMBEDDED ADS (INSTANT TEXT RENDER!) =====
     if (window.__INITIAL_ADS__ && window.__INITIAL_ADS__.length > 0) {
-        // Server embedded ALL ads - show INSTANTLY, skip ALL API calls!
+        // Server embedded ads WITHOUT images — render text INSTANTLY!
         hasCachedData = true;
         allAdsData = window.__INITIAL_ADS__;
         filterAndRender(window.__INITIAL_ADS__, category, subCategory);
         updateCategoryCounts(window.__INITIAL_ADS__);
 
-        // Save to localStorage for offline/future instant loads
-        try {
-            localStorage.setItem('cachedAllAds', JSON.stringify(window.__INITIAL_ADS__));
-            localStorage.setItem('cachedAllAdsTime', Date.now().toString());
-        } catch (e) { /* storage full */ }
-
         // Clear the embedded data after first use
+        const hadImages = window.__ADS_HAVE_IMAGES__;
         delete window.__INITIAL_ADS__;
-        // ALL data is loaded — no need for ANY API call! 🚀
+        delete window.__ADS_HAVE_IMAGES__;
+
+        // Now fetch FULL ads with images in the BACKGROUND (non-blocking)
+        if (hadImages) {
+            fetch(`${API}/api/ads/cache`, { headers: { 'Accept': 'application/json' } })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ads && data.ads.length > 0) {
+                        allAdsData = data.ads;
+                        filterAndRender(data.ads, category, subCategory);
+                        // Save full data to localStorage
+                        try {
+                            localStorage.setItem('cachedAllAds', JSON.stringify(data.ads));
+                            localStorage.setItem('cachedAllAdsTime', Date.now().toString());
+                        } catch (e) { /* storage full */ }
+                    }
+                })
+                .catch(() => { /* images will show placeholders, text is already visible */ });
+        }
         return;
     }
 
