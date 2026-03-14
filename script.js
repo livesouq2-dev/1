@@ -1166,59 +1166,59 @@ function setupEventListeners() {
         }
     });
 
-    // Post ad form
+    // Post ad form — with duplicate prevention & loading state
     document.getElementById('adForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Get up to 4 images as compressed base64
-        let imagesBase64 = [];
-        const imageFiles = document.getElementById('adImages')?.files;
+        // Prevent double-submit
+        const submitBtn = e.target.querySelector('button[type="submit"], .btn-primary');
+        if (submitBtn && submitBtn.disabled) return; // Already submitting
+        
+        // Show loading state
+        const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ جاري النشر...';
+            submitBtn.style.opacity = '0.7';
+        }
 
-        // DEBUG: Log image file info
-        console.log('📷 Image files selected:', imageFiles ? imageFiles.length : 0);
+        try {
+            // Get up to 4 images as compressed base64
+            let imagesBase64 = [];
+            const imageFiles = document.getElementById('adImages')?.files;
 
-        if (imageFiles && imageFiles.length > 0) {
-            const filesToProcess = Array.from(imageFiles).slice(0, 4); // Max 4 images
-            console.log('📷 Processing', filesToProcess.length, 'files');
+            if (imageFiles && imageFiles.length > 0) {
+                const filesToProcess = Array.from(imageFiles).slice(0, 4); // Max 4 images
 
-            for (const file of filesToProcess) {
-                console.log('📷 Compressing:', file.name, 'Size:', file.size);
-                try {
-                    const compressed = await compressImage(file);
-                    console.log('📷 Compressed to:', compressed ? compressed.length : 0, 'chars');
-                    imagesBase64.push(compressed);
-                } catch (err) {
-                    console.error('❌ Compression error:', err);
+                for (const file of filesToProcess) {
+                    try {
+                        const compressed = await compressImage(file);
+                        if (compressed) imagesBase64.push(compressed);
+                    } catch (err) {
+                        console.error('❌ Compression error:', err);
+                    }
                 }
             }
-        }
 
-        console.log('📷 Total images to send:', imagesBase64.length);
-        if (imagesBase64.length > 0) {
-            console.log('📷 First image preview:', imagesBase64[0].substring(0, 100) + '...');
-        }
+            const category = document.getElementById('adCategory').value;
+            const subCategory = document.getElementById('adSubCategory')?.value || null;
+            const adData = {
+                title: document.getElementById('adTitle').value,
+                category: category,
+                subCategory: subCategory,
+                price: document.getElementById('adPrice').value,
+                location: document.getElementById('adLocation').value,
+                whatsapp: document.getElementById('adWhatsapp').value,
+                images: imagesBase64,
+                description: document.getElementById('adDescription').value
+            };
 
-        const category = document.getElementById('adCategory').value;
-        const subCategory = document.getElementById('adSubCategory')?.value || null;
-        const adData = {
-            title: document.getElementById('adTitle').value,
-            category: category,
-            subCategory: subCategory,
-            price: document.getElementById('adPrice').value,
-            location: document.getElementById('adLocation').value,
-            whatsapp: document.getElementById('adWhatsapp').value,
-            images: imagesBase64,
-            description: document.getElementById('adDescription').value
-        };
+            // Add job-specific fields if category is jobs
+            if (category === 'jobs') {
+                adData.jobType = document.getElementById('jobType')?.value || null;
+                adData.jobExperience = document.getElementById('jobExperience')?.value || null;
+            }
 
-        console.log('📤 Sending ad with', adData.images.length, 'images');
-
-        // Add job-specific fields if category is jobs
-        if (category === 'jobs') {
-            adData.jobType = document.getElementById('jobType')?.value || null;
-            adData.jobExperience = document.getElementById('jobExperience')?.value || null;
-        }
-        try {
             const res = await fetch(`${API}/api/ads`, {
                 method: 'POST',
                 headers: {
@@ -1237,7 +1237,14 @@ function setupEventListeners() {
                 alert(data.message || 'خطأ في نشر الإعلان');
             }
         } catch (e) {
-            alert('خطأ في الاتصال بالسيرفر');
+            alert('خطأ في الاتصال بالسيرفر، حاول مرة أخرى');
+        } finally {
+            // Re-enable button (whether success or error)
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.style.opacity = '1';
+            }
         }
     });
 
