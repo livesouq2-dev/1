@@ -974,6 +974,13 @@ function updateCategoryCounts(ads) {
 
 // ===== Modal Functions =====
 function openModal(id) {
+    // If opening the post ad modal, reset form and clear old image previews
+    if (id === 'postAdModal') {
+        const form = document.getElementById('adForm');
+        if (form) form.reset();
+        const preview = document.getElementById('imagesPreview');
+        if (preview) preview.innerHTML = '';
+    }
     document.getElementById(id).classList.add('active');
     document.body.style.overflow = 'hidden';
 }
