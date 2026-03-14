@@ -275,8 +275,8 @@ input, select, textarea { font-family: inherit; }
 }
 
 .hero-title {
-    font-size: clamp(2.5rem, 6vw, 4.2rem);
-    font-weight: 900; line-height: 1.2; margin-bottom: 24px;
+    font-size: clamp(2.8rem, 7vw, 4.5rem);
+    font-weight: 900; line-height: 1.15; margin-bottom: 24px;
 }
 
 .hero-line { display: block; }
@@ -444,8 +444,8 @@ input, select, textarea { font-family: inherit; }
 .stat small { color: var(--text-muted); font-size: 0.9rem; }
 
 @media (max-width: 768px) {
-    .hero-title { font-size: 2rem; }
-    .gradient-text { font-size: 2.2rem !important; }
+    .hero-title { font-size: 2.6rem; }
+    .gradient-text { font-size: 2.8rem !important; }
     .hero-stats { gap: 24px; }
     .stat span { font-size: 1.6rem; }
     .search-go-btn span { display: none; }
@@ -1116,8 +1116,8 @@ section { padding: 100px 0; }
 @media (max-width: 480px) {
     /* Hero */
     .hero { padding: 90px 0 40px; }
-    .hero-title { font-size: 1.7rem !important; }
-    .gradient-text { font-size: 1.9rem !important; }
+    .hero-title { font-size: 2.2rem !important; }
+    .gradient-text { font-size: 2.5rem !important; }
     .hero-desc { font-size: 0.92rem; margin-bottom: 20px; }
     .badge { padding: 6px 14px; font-size: 0.75rem; }
 
@@ -1242,8 +1242,8 @@ section { padding: 100px 0; }
 
 /* === Small Phone (360px) === */
 @media (max-width: 360px) {
-    .hero-title { font-size: 1.5rem !important; }
-    .gradient-text { font-size: 1.6rem !important; }
+    .hero-title { font-size: 1.9rem !important; }
+    .gradient-text { font-size: 2.1rem !important; }
     .hero-desc { font-size: 0.85rem; }
     .search-cat-btn { padding: 6px 10px; font-size: 0.72rem; }
     .listings-grid { grid-template-columns: 1fr; gap: 12px; }
