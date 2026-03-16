@@ -306,4 +306,23 @@ router.post('/scrape-olx', adminAuth, async (req, res) => {
     }
 });
 
+// Delete all OLX scraped ads (admin only)
+router.delete('/olx-ads', adminAuth, async (req, res) => {
+    try {
+        const result = await Ad.deleteMany({ source: 'olx' });
+        console.log(`🗑️ تم حذف ${result.deletedCount} إعلان OLX`);
+        
+        // Update cache
+        updateCacheFile();
+        
+        res.json({
+            message: `تم حذف ${result.deletedCount} إعلان من OLX`,
+            deletedCount: result.deletedCount
+        });
+    } catch (error) {
+        console.error('❌ خطأ في حذف إعلانات OLX:', error.message);
+        res.status(500).json({ message: 'خطأ في الحذف: ' + error.message });
+    }
+});
+
 module.exports = router;

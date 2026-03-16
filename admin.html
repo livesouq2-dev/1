@@ -610,6 +610,9 @@
                 <button class="btn-olx" id="btnScrapeOlx" onclick="scrapeOLX()">
                     🚀 سحب إعلانات جديدة
                 </button>
+                <button class="btn-olx" style="background: linear-gradient(135deg, #dc2626, #991b1b); margin-top: 10px;" onclick="deleteOlxAds()">
+                    🗑️ حذف كل إعلانات OLX القديمة
+                </button>
                 <div class="olx-spinner" id="olxSpinner"></div>
                 <p id="olxStatus" style="color: var(--text-muted); margin-top: 15px;"></p>
                 
@@ -1287,6 +1290,36 @@
                 btn.disabled = false;
                 btn.innerHTML = '🚀 سحب إعلانات جديدة';
                 spinner.style.display = 'none';
+            }
+        }
+
+        // Delete all OLX ads
+        async function deleteOlxAds() {
+            if (!confirm('⚠️ هل أنت متأكد من حذف جميع إعلانات OLX؟\nيمكنك إعادة سحبها بعد الحذف.')) return;
+            
+            const status = document.getElementById('olxStatus');
+            status.textContent = '🗑️ جاري حذف إعلانات OLX...';
+            status.style.color = '#f59e0b';
+
+            try {
+                const res = await fetch(`${API}/api/admin/olx-ads`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    status.textContent = `✅ ${data.message}`;
+                    status.style.color = '#22c55e';
+                    document.getElementById('olxResults').style.display = 'none';
+                    loadStats();
+                } else {
+                    status.textContent = `❌ ${data.message || 'حدث خطأ'}`;
+                    status.style.color = '#ef4444';
+                }
+            } catch (error) {
+                status.textContent = `❌ خطأ: ${error.message}`;
+                status.style.color = '#ef4444';
             }
         }
     </script>
