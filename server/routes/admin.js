@@ -286,4 +286,24 @@ router.put('/prices', adminAuth, async (req, res) => {
     }
 });
 
+// ===== OLX SCRAPER =====
+
+// Scrape OLX Lebanon ads (admin only)
+router.post('/scrape-olx', adminAuth, async (req, res) => {
+    try {
+        const { scrapeAll } = require('../utils/olx-scraper');
+        
+        console.log('🔄 الأدمن بدأ سحب إعلانات OLX...');
+        const results = await scrapeAll();
+        
+        res.json({
+            message: `تم سحب ${results.total.saved} إعلان جديد من OLX`,
+            results
+        });
+    } catch (error) {
+        console.error('❌ خطأ في سحب OLX:', error.message);
+        res.status(500).json({ message: 'خطأ في سحب الإعلانات: ' + error.message });
+    }
+});
+
 module.exports = router;

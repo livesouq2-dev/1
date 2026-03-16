@@ -311,6 +311,110 @@
             font-size: 1.5rem;
             cursor: pointer;
         }
+
+        /* OLX Scraper Section */
+        .olx-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .olx-logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .btn-olx {
+            background: linear-gradient(135deg, #002f34, #00b53f);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-olx:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 181, 63, 0.3);
+        }
+
+        .btn-olx:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .olx-results {
+            margin-top: 25px;
+            text-align: right;
+            display: none;
+        }
+
+        .olx-result-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .olx-result-card .category-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .olx-result-card .result-numbers {
+            display: flex;
+            gap: 20px;
+        }
+
+        .olx-result-card .result-numbers span {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .olx-result-card .saved { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .olx-result-card .skipped { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .olx-result-card .errors { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+        .olx-spinner {
+            display: none;
+            margin: 20px auto;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--glass-border);
+            border-top: 4px solid #00b53f;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .source-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-right: 5px;
+        }
+        .source-olx {
+            background: rgba(0, 181, 63, 0.2);
+            color: #00b53f;
+        }
+        .source-user {
+            background: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+        }
     </style>
 </head>
 
@@ -407,6 +511,7 @@
             <button class="tab-admin" onclick="showTab('ads', this)">📋 كل الإعلانات</button>
             <button class="tab-admin" onclick="showTab('users', this)">👥 المستخدمين</button>
             <button class="tab-admin" onclick="showTab('prices', this)">💰 أسعار الذهب</button>
+            <button class="tab-admin" onclick="showTab('olx', this)">🌐 سحب OLX</button>
         </div>
 
         <!-- Pending Ads -->
@@ -491,6 +596,49 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%;">💾 حفظ الأسعار</button>
             </form>
             <p id="pricesLastUpdate" style="color: var(--text-muted); margin-top: 15px; font-size: 0.85rem;"></p>
+        </div>
+
+        <!-- OLX Scraper -->
+        <div id="olxTab" class="admin-section hidden">
+            <h3 class="section-title">🌐 سحب إعلانات من OLX Lebanon</h3>
+            <div class="olx-section">
+                <div class="olx-logo">🌐</div>
+                <p style="color: var(--text-muted); margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    سحب أحدث إعلانات <strong>فرص العمل</strong> و<strong>الشقق للإيجار</strong> من OLX Lebanon.<br>
+                    الإعلانات المسحوبة ستكون بحالة "بانتظار الموافقة" حتى توافق عليها.
+                </p>
+                <button class="btn-olx" id="btnScrapeOlx" onclick="scrapeOLX()">
+                    🚀 سحب إعلانات جديدة
+                </button>
+                <div class="olx-spinner" id="olxSpinner"></div>
+                <p id="olxStatus" style="color: var(--text-muted); margin-top: 15px;"></p>
+                
+                <div class="olx-results" id="olxResults">
+                    <h4 style="margin-bottom: 10px;">📊 نتائج السحب</h4>
+                    <div class="olx-result-card">
+                        <span class="category-name">💼 فرص العمل</span>
+                        <div class="result-numbers">
+                            <span class="saved" id="olxJobsSaved">0 جديد</span>
+                            <span class="skipped" id="olxJobsSkipped">0 موجود</span>
+                        </div>
+                    </div>
+                    <div class="olx-result-card">
+                        <span class="category-name">🏠 شقق للإيجار</span>
+                        <div class="result-numbers">
+                            <span class="saved" id="olxRentalsSaved">0 جديد</span>
+                            <span class="skipped" id="olxRentalsSkipped">0 موجود</span>
+                        </div>
+                    </div>
+                    <div class="olx-result-card" style="border: 1px solid rgba(34,197,94,0.3);">
+                        <span class="category-name">📊 الإجمالي</span>
+                        <div class="result-numbers">
+                            <span class="saved" id="olxTotalSaved">0 جديد</span>
+                            <span class="skipped" id="olxTotalSkipped">0 موجود</span>
+                        </div>
+                    </div>
+                    <p id="olxDuration" style="color: var(--text-muted); margin-top: 10px; font-size: 0.85rem;"></p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -688,7 +836,7 @@
                         <td>${ad.title}</td>
                         <td>${getCategoryName(ad.category)}</td>
                         <td>${ad.price}</td>
-                        <td>${ad.user?.name || '-'}</td>
+                        <td>${ad.source === 'olx' ? '<span class="source-badge source-olx">OLX</span>' : ''}${ad.user?.name || (ad.source === 'olx' ? 'OLX Bot' : '-')}</td>
                         <td style="direction:ltr">${ad.user?.phone || '-'}</td>
                         <td>${new Date(ad.createdAt).toLocaleDateString('ar')}</td>
                         <td>
@@ -716,7 +864,7 @@
                         <td>${ad.price}</td>
                         <td style="text-align:center;font-weight:bold;color:#22c55e">${ad.whatsappClicks || 0}</td>
                         <td><span class="status-badge status-${ad.status}">${getStatusName(ad.status)}</span></td>
-                        <td>${ad.user?.name || '-'}</td>
+                        <td>${ad.source === 'olx' ? '<span class="source-badge source-olx">OLX</span>' : ''}${ad.user?.name || (ad.source === 'olx' ? 'OLX Bot' : '-')}</td>
                         <td>
                             <button class="action-btn btn-edit" onclick="openEditAdById('${ad._id}', 'all')">✏️</button>
                             ${ad.status === 'rejected' ? `<button class="action-btn btn-approve" onclick="restoreAd('${ad._id}')" title="استرجاع للموافقة">✓</button>` : ''}
@@ -815,6 +963,7 @@
             document.getElementById('adsTab').classList.add('hidden');
             document.getElementById('usersTab').classList.add('hidden');
             document.getElementById('pricesTab').classList.add('hidden');
+            document.getElementById('olxTab').classList.add('hidden');
             document.getElementById(tab + 'Tab').classList.remove('hidden');
             if (tab === 'ads') loadAllAds();
             if (tab === 'users') loadUsers();
@@ -1088,6 +1237,58 @@
                 alert('خطأ في الاتصال بالسيرفر');
             }
         });
+
+        // ===== OLX SCRAPER =====
+        async function scrapeOLX() {
+            const btn = document.getElementById('btnScrapeOlx');
+            const spinner = document.getElementById('olxSpinner');
+            const status = document.getElementById('olxStatus');
+            const results = document.getElementById('olxResults');
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = '⏳ جاري السحب...';
+            spinner.style.display = 'block';
+            status.textContent = 'جاري سحب الإعلانات من OLX Lebanon... قد يستغرق الأمر 1-2 دقيقة';
+            results.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API}/api/admin/scrape-olx`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (res.ok && data.results) {
+                    const r = data.results;
+                    // Update result cards
+                    document.getElementById('olxJobsSaved').textContent = `${r.jobs.saved} جديد`;
+                    document.getElementById('olxJobsSkipped').textContent = `${r.jobs.skipped} موجود`;
+                    document.getElementById('olxRentalsSaved').textContent = `${r.rentals.saved} جديد`;
+                    document.getElementById('olxRentalsSkipped').textContent = `${r.rentals.skipped} موجود`;
+                    document.getElementById('olxTotalSaved').textContent = `${r.total.saved} جديد`;
+                    document.getElementById('olxTotalSkipped').textContent = `${r.total.skipped} موجود`;
+                    document.getElementById('olxDuration').textContent = `⏱️ المدة: ${r.duration} | 📅 ${new Date(r.scrapedAt).toLocaleString('ar-LB')}`;
+
+                    results.style.display = 'block';
+                    status.textContent = `✅ ${data.message}`;
+                    status.style.color = '#22c55e';
+
+                    // Refresh stats
+                    loadStats();
+                } else {
+                    status.textContent = `❌ ${data.message || 'حدث خطأ'}`;
+                    status.style.color = '#ef4444';
+                }
+            } catch (error) {
+                status.textContent = `❌ خطأ في الاتصال: ${error.message}`;
+                status.style.color = '#ef4444';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 سحب إعلانات جديدة';
+                spinner.style.display = 'none';
+            }
+        }
     </script>
 </body>
 

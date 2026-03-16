@@ -50,7 +50,20 @@ const adSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
+    },
+    source: {
+        type: String,
+        enum: ['user', 'olx'],
+        default: 'user'
+    },
+    sourceId: {
+        type: String,
+        default: null
+    },
+    sourceUrl: {
+        type: String,
+        default: null
     },
     status: {
         type: String,
@@ -88,6 +101,9 @@ adSchema.index({ user: 1, createdAt: -1 });
 
 // Status only (for admin queries)
 adSchema.index({ status: 1 });
+
+// Source ID index for deduplication of scraped ads
+adSchema.index({ sourceId: 1 }, { unique: true, sparse: true });
 
 // Text search index for search functionality
 adSchema.index({ title: 'text', description: 'text', location: 'text' });
