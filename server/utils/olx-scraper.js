@@ -247,7 +247,7 @@ async function scrapeAdDetails(url) {
             price,
             location,
             whatsapp,
-            images: [], // لا نسحب صور OLX لأنها تحتوي على علامة مائية (شعار OLX)
+            images,
             sourceId,
             sourceUrl: url
         };
