@@ -234,6 +234,13 @@ async function scrapeAdDetails(url) {
             return null;
         }
         
+        // Skip ads without a valid phone number (must contain at least 7 digits)
+        const digitCount = (whatsapp || '').replace(/[^\d]/g, '').length;
+        if (digitCount < 7) {
+            console.log(`⏭️ تخطي (بدون رقم واتساب): ${title}`);
+            return null;
+        }
+        
         return {
             title: title.substring(0, 100),
             description: description || title,
