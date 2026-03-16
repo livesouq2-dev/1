@@ -247,7 +247,7 @@ app.get('/', async (req, res) => {
             adsPromise = Promise.resolve(cache.ads);
         } else {
             adsPromise = Ad.find({ status: 'approved' })
-                .select('title description category subCategory price location whatsapp isFeatured createdAt images jobType jobExperience')
+                .select('title description category subCategory price location whatsapp isFeatured createdAt images jobType jobExperience source sourceUrl')
                 .populate('user', 'name')
                 .sort({ isFeatured: -1, createdAt: -1 })
                 .limit(200)

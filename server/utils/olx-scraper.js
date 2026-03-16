@@ -130,21 +130,87 @@ async function scrapeAdDetails(url) {
         }
         if (!location) location = 'لبنان';
         
-        // Extract phone/whatsapp
+        // Extract phone/whatsapp - MULTIPLE STRATEGIES
         let whatsapp = '';
-        $('[class*="hone"], [data-aut-id="btnPhone"], [href*="tel:"]').each((i, el) => {
-            const text = $(el).text().trim();
-            const href = $(el).attr('href') || '';
-            if (href.includes('tel:')) {
-                whatsapp = href.replace('tel:', '').trim();
-                return false;
+        
+        // Strategy 1: Try OLX phone reveal API
+        try {
+            const adIdMatch = url.match(/ID(\d+)\.html/);
+            if (adIdMatch) {
+                const phoneRes = await axios.get(
+                    `https://www.olx.com.lb/api/listing/${adIdMatch[1]}/contactInfo`,
+                    { headers: { ...HEADERS, 'Referer': url }, timeout: 8000 }
+                );
+                if (phoneRes.data && phoneRes.data.phone) {
+                    whatsapp = phoneRes.data.phone;
+                    console.log(`📱 تم سحب الرقم من API: ${whatsapp}`);
+                }
             }
-            if (text && text.match(/[\d+\s-]{8,}/)) {
-                whatsapp = text;
-                return false;
+        } catch (e) {
+            // API might be protected, continue with other methods
+        }
+
+        // Strategy 2: Look for phone in __NEXT_DATA__ or embedded JSON
+        if (!whatsapp) {
+            $('script').each((i, el) => {
+                const scriptContent = $(el).html() || '';
+                // Look for __NEXT_DATA__ which often has phone info
+                if (scriptContent.includes('__NEXT_DATA__') || scriptContent.includes('phoneNumber') || scriptContent.includes('phone_number')) {
+                    // Try to extract phone from JSON in script tags
+                    const phoneMatch = scriptContent.match(/"(?:phone|phoneNumber|phone_number|mobile|whatsapp)"[\s]*:[\s]*"([+\d\s\-()]{8,})"/i);
+                    if (phoneMatch) {
+                        whatsapp = phoneMatch[1].trim();
+                        console.log(`📱 تم سحب الرقم من JSON: ${whatsapp}`);
+                    }
+                }
+            });
+        }
+
+        // Strategy 3: Extract Lebanese phone numbers from description text
+        if (!whatsapp && description) {
+            // Lebanese phone patterns: +961, 03, 70, 71, 76, 78, 79, 81, etc.
+            const phonePatterns = [
+                /(?:\+961|00961)[\s\-]?(?:\d[\s\-]?){7,8}/g,       // +961 XX XXX XXX
+                /(?:^|\s)(0[1-9][\s\-]?(?:\d[\s\-]?){6,7})(?:\s|$|[,.])/gm,  // 0X XXXXXXX
+                /(?:^|\s)((?:70|71|76|78|79|81|03|06)\s?[\d\s\-]{6,8})(?:\s|$|[,.])/gm, // 7X XXXXXX
+                /(?:whatsapp|واتس|واتساب|اتصل|call|phone|هاتف|رقم)[\s:]*([+\d\s\-()]{8,})/gi
+            ];
+            
+            for (const pattern of phonePatterns) {
+                const matches = description.match(pattern);
+                if (matches && matches.length > 0) {
+                    // Clean the match
+                    whatsapp = matches[0].replace(/[^\d+]/g, '');
+                    // Add +961 prefix if missing
+                    if (whatsapp.length >= 7 && whatsapp.length <= 8 && !whatsapp.startsWith('+') && !whatsapp.startsWith('00')) {
+                        whatsapp = '+961' + whatsapp;
+                    } else if (whatsapp.startsWith('0') && whatsapp.length === 8) {
+                        whatsapp = '+961' + whatsapp.substring(1);
+                    }
+                    console.log(`📱 تم سحب الرقم من الوصف: ${whatsapp}`);
+                    break;
+                }
             }
-        });
-        if (!whatsapp) whatsapp = 'غير متوفر';
+        }
+        
+        // Strategy 4: HTML tel: links
+        if (!whatsapp) {
+            $('[href*="tel:"]').each((i, el) => {
+                const href = $(el).attr('href') || '';
+                if (href.includes('tel:')) {
+                    const num = href.replace('tel:', '').trim();
+                    if (num.length >= 8) {
+                        whatsapp = num;
+                        return false;
+                    }
+                }
+            });
+        }
+
+        // Strategy 5: Show OLX link so user can find the number
+        if (!whatsapp) {
+            whatsapp = 'انظر الإعلان الأصلي';
+        }
         
         // Extract images
         let images = [];

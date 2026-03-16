@@ -498,9 +498,14 @@ function showAdDetail(adId) {
                 <h4>${ad.category === 'jobs' ? '📋 المتطلبات والوصف:' : '📝 الوصف:'}</h4>
                 <p>${ad.description || 'لا يوجد وصف'}</p>
             </div>
-            ${ad.whatsapp ? `
-                <a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="btn btn-primary ad-detail-whatsapp" onclick="trackWhatsAppClick('${ad._id}')">
+            ${ad.whatsapp && !ad.whatsapp.includes('انظر') && !ad.whatsapp.includes('غير') ? `
+                <a href="https://wa.me/${ad.whatsapp.replace(/[^\d+]/g, '')}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="btn btn-primary ad-detail-whatsapp" onclick="trackWhatsAppClick('${ad._id}')">
                     💬 تواصل عبر واتساب
+                </a>
+            ` : ''}
+            ${ad.sourceUrl ? `
+                <a href="${ad.sourceUrl}" target="_blank" class="btn btn-outline ad-detail-whatsapp" style="margin-top: 8px; display: inline-block; border-color: #00b53f; color: #00b53f;">
+                    🌐 شاهد الإعلان الأصلي على OLX
                 </a>
             ` : ''}
         </div>
@@ -945,7 +950,8 @@ function renderAds(ads) {
                 <div class="listing-footer">
                     <div class="price">${ad.price && !ad.price.includes('$') && !isNaN(ad.price) ? '$' + ad.price : ad.price}</div>
                 </div>
-                ${ad.whatsapp ? `<a href="https://wa.me/${ad.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="listing-whatsapp">💬 تواصل واتساب</a>` : ''}
+                ${ad.whatsapp && !ad.whatsapp.includes('انظر') && !ad.whatsapp.includes('غير') ? `<a href="https://wa.me/${ad.whatsapp.replace(/[^\d+]/g, '')}?text=مرحباً، أنا مهتم بإعلانك: ${ad.title}" target="_blank" class="listing-whatsapp">💬 تواصل واتساب</a>` : ''}
+                ${ad.sourceUrl ? `<a href="${ad.sourceUrl}" target="_blank" class="listing-whatsapp" style="background: linear-gradient(135deg, #002f34, #00b53f);">🌐 OLX</a>` : ''}
                 </div>
             </div>
         </article>
