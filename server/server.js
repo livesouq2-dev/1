@@ -15,6 +15,7 @@ const authRoutes = require('./routes/auth');
 const adsRoutes = require('./routes/ads');
 const adminRoutes = require('./routes/admin');
 const Ad = require('./models/Ad');
+const { startAutoUpdate } = require('./utils/price-updater');
 
 const app = express();
 
@@ -399,7 +400,7 @@ process.on('SIGINT', async () => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
     console.log(`
 🛒 بدّل وبيع - Badel w Bi3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -408,5 +409,9 @@ app.listen(PORT, async () => {
 🔧 لوحة التحكم: http://localhost:${PORT}/admin
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 🛡️ الحماية: Helmet ✓ | Rate Limit ✓ | NoSQL Sanitize ✓
+💰 أسعار الذهب: تحديث تلقائي كل ساعة
     `);
+
+    // Start auto price updates (every 1 hour)
+    startAutoUpdate();
 });
