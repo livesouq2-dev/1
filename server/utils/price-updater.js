@@ -57,12 +57,10 @@ async function fetchDollarRate() {
 
 /**
  * Calculate gold lira price from ounce price
- * Gold Lira (Turkish/Ottoman) ≈ 6.5g of 22K gold
- * Formula: (goldOunce / 31.1035) * 6.5 * (22/24)
+ * Lebanese formula: سعر أونصة ÷ 31.1 × 0.875 × 8 غرامات
  */
 function calculateGoldLira(goldOuncePrice) {
-    const pricePerGram = goldOuncePrice / OUNCE_TO_GRAMS;
-    const goldLira = pricePerGram * GOLD_LIRA_GRAMS * (22 / 24);
+    const goldLira = (goldOuncePrice / OUNCE_TO_GRAMS) * 0.875 * GOLD_LIRA_GRAMS;
     return Math.round(goldLira);
 }
 
