@@ -399,12 +399,17 @@ async function scrapeRooms() {
                 continue;
             }
             
-            // Filter: only rooms under $400
+            // Filter: only rooms under $400 or without price
             const priceNum = parseFloat((adData.price || '').replace(/[^0-9.]/g, ''));
             if (priceNum && priceNum > 400) {
                 console.log(`⏭️ تخطي (سعر مرتفع $${priceNum}): ${adData.title}`);
                 results.skipped++;
                 continue;
+            }
+            
+            // If no price found, set "اتصل للسعر"
+            if (!adData.price || !priceNum) {
+                adData.price = 'اتصل للسعر';
             }
             
             const ad = new Ad({
