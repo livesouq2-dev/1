@@ -632,6 +632,13 @@
                             <span class="skipped" id="olxRentalsSkipped">0 موجود</span>
                         </div>
                     </div>
+                    <div class="olx-result-card">
+                        <span class="category-name">🛏️ غرف للإيجار (أقل من $400)</span>
+                        <div class="result-numbers">
+                            <span class="saved" id="olxRoomsSaved">0 جديد</span>
+                            <span class="skipped" id="olxRoomsSkipped">0 موجود</span>
+                        </div>
+                    </div>
                     <div class="olx-result-card" style="border: 1px solid rgba(34,197,94,0.3);">
                         <span class="category-name">📊 الإجمالي</span>
                         <div class="result-numbers">
@@ -1269,6 +1276,8 @@
                     document.getElementById('olxJobsSkipped').textContent = `${r.jobs.skipped} موجود`;
                     document.getElementById('olxRentalsSaved').textContent = `${r.rentals.saved} جديد`;
                     document.getElementById('olxRentalsSkipped').textContent = `${r.rentals.skipped} موجود`;
+                    document.getElementById('olxRoomsSaved').textContent = `${r.rooms.saved} جديد`;
+                    document.getElementById('olxRoomsSkipped').textContent = `${r.rooms.skipped} موجود`;
                     document.getElementById('olxTotalSaved').textContent = `${r.total.saved} جديد`;
                     document.getElementById('olxTotalSkipped').textContent = `${r.total.skipped} موجود`;
                     document.getElementById('olxDuration').textContent = `⏱️ المدة: ${r.duration} | 📅 ${new Date(r.scrapedAt).toLocaleString('ar-LB')}`;

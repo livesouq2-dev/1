@@ -5,7 +5,8 @@ const Ad = require('../models/Ad');
 // OLX Lebanon URLs
 const OLX_URLS = {
     jobs: 'https://www.olx.com.lb/en/jobs/',
-    rentals: 'https://www.olx.com.lb/en/properties/apartments-villas-for-rent/'
+    rentals: 'https://www.olx.com.lb/en/properties/apartments-villas-for-rent/',
+    rooms: 'https://www.olx.com.lb/en/properties/rooms-for-rent/'
 };
 
 // Headers to mimic a real browser
@@ -382,7 +383,64 @@ async function scrapeRentals() {
 }
 
 /**
- * Run full scrape for both categories
+ * Scrape rooms for rent from OLX Lebanon (under $400)
+ */
+async function scrapeRooms() {
+    const adLinks = await scrapeListingPage(OLX_URLS.rooms);
+    const results = { saved: 0, skipped: 0, errors: 0 };
+    
+    for (const link of adLinks) {
+        try {
+            await randomDelay();
+            const adData = await scrapeAdDetails(link);
+            
+            if (!adData) {
+                results.skipped++;
+                continue;
+            }
+            
+            // Filter: only rooms under $400
+            const priceNum = parseFloat((adData.price || '').replace(/[^0-9.]/g, ''));
+            if (priceNum && priceNum > 400) {
+                console.log(`⏭️ تخطي (سعر مرتفع $${priceNum}): ${adData.title}`);
+                results.skipped++;
+                continue;
+            }
+            
+            const ad = new Ad({
+                title: adData.title,
+                description: adData.description,
+                category: 'realestate',
+                subCategory: 'apartment_rent',
+                price: adData.price || 'اتصل للسعر',
+                location: adData.location,
+                whatsapp: adData.whatsapp,
+                images: adData.images,
+                source: 'olx',
+                sourceId: adData.sourceId,
+                sourceUrl: adData.sourceUrl,
+                status: 'pending',
+                user: null
+            });
+            
+            await ad.save();
+            results.saved++;
+            console.log(`✅ تم حفظ غرفة: ${adData.title} | ${adData.price}`);
+        } catch (error) {
+            if (error.code === 11000) {
+                results.skipped++;
+            } else {
+                results.errors++;
+                console.error(`❌ خطأ في حفظ الإعلان: ${error.message}`);
+            }
+        }
+    }
+    
+    return results;
+}
+
+/**
+ * Run full scrape for all categories
  */
 async function scrapeAll() {
     console.log('\n🚀 ═══════════════════════════════════');
@@ -395,22 +453,28 @@ async function scrapeAll() {
     console.log('📌 ─── فرص العمل ───');
     const jobResults = await scrapeJobs();
     
-    // Wait between categories
     await randomDelay();
     
     // Scrape rentals
     console.log('\n📌 ─── الشقق للإيجار ───');
     const rentalResults = await scrapeRentals();
     
+    await randomDelay();
+    
+    // Scrape rooms
+    console.log('\n📌 ─── غرف للإيجار ───');
+    const roomResults = await scrapeRooms();
+    
     const totalTime = Math.round((Date.now() - startTime) / 1000);
     
     const summary = {
         jobs: jobResults,
         rentals: rentalResults,
+        rooms: roomResults,
         total: {
-            saved: jobResults.saved + rentalResults.saved,
-            skipped: jobResults.skipped + rentalResults.skipped,
-            errors: jobResults.errors + rentalResults.errors
+            saved: jobResults.saved + rentalResults.saved + roomResults.saved,
+            skipped: jobResults.skipped + rentalResults.skipped + roomResults.skipped,
+            errors: jobResults.errors + rentalResults.errors + roomResults.errors
         },
         duration: `${totalTime} ثانية`,
         scrapedAt: new Date().toISOString()
@@ -426,4 +490,4 @@ async function scrapeAll() {
     return summary;
 }
 
-module.exports = { scrapeAll, scrapeJobs, scrapeRentals };
+module.exports = { scrapeAll, scrapeJobs, scrapeRentals, scrapeRooms };
