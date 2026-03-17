@@ -6,9 +6,9 @@ const GOLD_API = 'https://api.gold-api.com/price/XAU';
 const SILVER_API = 'https://api.gold-api.com/price/XAG';
 const DOLLAR_API = 'https://api.exchangerate-api.com/v4/latest/USD';
 
-// Gold Lira weight = 6.5 grams, 1 ounce = 31.1035 grams
-const GOLD_LIRA_GRAMS = 6.5;
-const OUNCE_TO_GRAMS = 31.1035;
+// Gold Lira: 8 grams, 21K purity (0.875), 1 ounce = 31.1 grams
+const GOLD_LIRA_GRAMS = 8;
+const OUNCE_TO_GRAMS = 31.1;
 
 /**
  * Fetch gold price per ounce (USD)
