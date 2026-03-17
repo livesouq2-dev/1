@@ -15,8 +15,7 @@ const HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
     'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
-    'Cache-Control': 'no-cache'
+    'Connection': 'keep-alive'
 };
 
 // Random delay between requests (2-5 seconds)
@@ -25,14 +24,14 @@ function randomDelay() {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Extract OLX ID from URL (e.g., ID116822345)
+// Extract OLX ad ID from URL
 function extractOlxId(url) {
     const match = url.match(/ID(\d+)\.html/);
     return match ? `olx_${match[1]}` : null;
 }
 
 /**
- * Scrape ad listing page to get individual ad URLs
+ * Scrape ad listing page to get individual ad URLs WITH prices
  */
 async function scrapeListingPage(url) {
     try {
@@ -40,22 +39,32 @@ async function scrapeListingPage(url) {
         const response = await axios.get(url, { headers: HEADERS, timeout: 15000 });
         const $ = cheerio.load(response.data);
         
-        const adLinks = [];
+        const adItems = [];
+        const seenUrls = new Set();
         
-        // OLX uses various selectors for ad cards - try multiple patterns
-        // Pattern 1: data-testid based links
+        // Extract ad links WITH prices from listing cards
         $('a[href*="/ad/"]').each((i, el) => {
             const href = $(el).attr('href');
             if (href && href.includes('/ad/') && href.includes('ID')) {
                 const fullUrl = href.startsWith('http') ? href : `https://www.olx.com.lb${href}`;
-                if (!adLinks.includes(fullUrl)) {
-                    adLinks.push(fullUrl);
+                if (!seenUrls.has(fullUrl)) {
+                    seenUrls.add(fullUrl);
+                    
+                    // Extract price from listing card text (e.g. "USD 250")
+                    let listPrice = '';
+                    const cardText = $(el).text();
+                    const priceMatch = cardText.match(/USD\s*[\d,]+\.?\d*/i) || cardText.match(/\$\s*[\d,]+\.?\d*/);
+                    if (priceMatch) {
+                        listPrice = priceMatch[0].trim();
+                    }
+                    
+                    adItems.push({ url: fullUrl, listPrice });
                 }
             }
         });
         
-        console.log(`📋 تم العثور على ${adLinks.length} إعلان في الصفحة`);
-        return adLinks.slice(0, 15); // Limit to 15 ads per category to avoid overload
+        console.log(`📋 تم العثور على ${adItems.length} إعلان في الصفحة`);
+        return adItems.slice(0, 15);
     } catch (error) {
         console.error(`❌ خطأ في سحب القائمة: ${error.message}`);
         return [];
@@ -64,8 +73,10 @@ async function scrapeListingPage(url) {
 
 /**
  * Scrape individual ad details
+ * @param {string} url - Ad URL
+ * @param {string} listPrice - Price extracted from listing page (fallback)
  */
-async function scrapeAdDetails(url) {
+async function scrapeAdDetails(url, listPrice = '') {
     try {
         const sourceId = extractOlxId(url);
         if (!sourceId) return null;
@@ -92,7 +103,6 @@ async function scrapeAdDetails(url) {
             description += $(el).text().trim() + ' ';
         });
         if (!description) {
-            // Try other selectors
             description = $('[class*="Description"]').first().text().trim();
         }
         if (!description) {
@@ -100,16 +110,63 @@ async function scrapeAdDetails(url) {
         }
         description = description.trim().substring(0, 1000);
         
-        // Extract price
+        // ========== IMPROVED PRICE EXTRACTION (5 strategies) ==========
         let price = '';
+        
+        // Strategy 1: CSS selectors on detail page
         $('[data-aut-id="itemPrice"], [class*="price"], [class*="Price"]').each((i, el) => {
             const text = $(el).text().trim();
             if (text && (text.includes('USD') || text.includes('$') || text.match(/\d/))) {
                 price = text;
-                return false; // break
+                return false;
             }
         });
-        if (!price) price = 'اتصل للسعر';
+        
+        // Strategy 2: Extract from __NEXT_DATA__ JSON
+        if (!price) {
+            try {
+                const nextData = $('script#__NEXT_DATA__').html();
+                if (nextData) {
+                    const priceMatch = nextData.match(/"price"[^}]*?"value"[:\s]*"?(\d[\d,]*\.?\d*)"?/i) ||
+                                      nextData.match(/"price_value"[:\s]*"?(\d[\d,]*\.?\d*)"?/i) ||
+                                      nextData.match(/"price"[:\s]*\{[^}]*?(\d[\d,]*\.?\d*)/i) ||
+                                      nextData.match(/"amount"[:\s]*"?(\d[\d,]*\.?\d*)"?/i);
+                    if (priceMatch && priceMatch[1]) {
+                        const num = parseFloat(priceMatch[1].replace(/,/g, ''));
+                        if (num > 0 && num < 1000000) {
+                            price = `USD ${num}`;
+                            console.log(`   💲 سعر من JSON: ${price}`);
+                        }
+                    }
+                }
+            } catch (e) { /* ignore */ }
+        }
+        
+        // Strategy 3: Find USD/$ anywhere on the page
+        if (!price) {
+            const bodyText = $('body').text();
+            const usdMatch = bodyText.match(/USD\s*[\d,]+\.?\d*/i) || bodyText.match(/\$\s*[\d,]+\.?\d*/);
+            if (usdMatch) {
+                price = usdMatch[0].trim();
+                console.log(`   💲 سعر من النص: ${price}`);
+            }
+        }
+        
+        // Strategy 4: From og:description meta tag
+        if (!price) {
+            const ogDesc = $('meta[property="og:description"]').attr('content') || '';
+            const ogMatch = ogDesc.match(/USD\s*[\d,]+\.?\d*/i) || ogDesc.match(/\$\s*[\d,]+\.?\d*/);
+            if (ogMatch) {
+                price = ogMatch[0].trim();
+                console.log(`   💲 سعر من og: ${price}`);
+            }
+        }
+        
+        // Strategy 5: Use price from listing page (fallback)
+        if (!price && listPrice) {
+            price = listPrice;
+            console.log(`   💲 سعر من القائمة: ${price}`);
+        }
         
         // Extract location
         let location = '';
@@ -121,7 +178,6 @@ async function scrapeAdDetails(url) {
             }
         });
         if (!location) {
-            // Try breadcrumb location
             $('[class*="readcrumb"] a, [aria-label*="breadcrumb"] a').each((i, el) => {
                 const text = $(el).text().trim();
                 if (text && !text.includes('Home') && !text.includes('OLX') && text.length > 2) {
@@ -155,9 +211,7 @@ async function scrapeAdDetails(url) {
         if (!whatsapp) {
             $('script').each((i, el) => {
                 const scriptContent = $(el).html() || '';
-                // Look for __NEXT_DATA__ which often has phone info
                 if (scriptContent.includes('__NEXT_DATA__') || scriptContent.includes('phoneNumber') || scriptContent.includes('phone_number')) {
-                    // Try to extract phone from JSON in script tags
                     const phoneMatch = scriptContent.match(/"(?:phone|phoneNumber|phone_number|mobile|whatsapp)"[\s]*:[\s]*"([+\d\s\-()]{8,})"/i);
                     if (phoneMatch) {
                         whatsapp = phoneMatch[1].trim();
@@ -169,20 +223,17 @@ async function scrapeAdDetails(url) {
 
         // Strategy 3: Extract Lebanese phone numbers from description text
         if (!whatsapp && description) {
-            // Lebanese phone patterns: +961, 03, 70, 71, 76, 78, 79, 81, etc.
             const phonePatterns = [
-                /(?:\+961|00961)[\s\-]?(?:\d[\s\-]?){7,8}/g,       // +961 XX XXX XXX
-                /(?:^|\s)(0[1-9][\s\-]?(?:\d[\s\-]?){6,7})(?:\s|$|[,.])/gm,  // 0X XXXXXXX
-                /(?:^|\s)((?:70|71|76|78|79|81|03|06)\s?[\d\s\-]{6,8})(?:\s|$|[,.])/gm, // 7X XXXXXX
+                /(?:\+961|00961)[\s\-]?(?:\d[\s\-]?){7,8}/g,
+                /(?:^|\s)(0[1-9][\s\-]?(?:\d[\s\-]?){6,7})(?:\s|$|[,.])/gm,
+                /(?:^|\s)((?:70|71|76|78|79|81|03|06)\s?[\d\s\-]{6,8})(?:\s|$|[,.])/gm,
                 /(?:whatsapp|واتس|واتساب|اتصل|call|phone|هاتف|رقم)[\s:]*([+\d\s\-()]{8,})/gi
             ];
             
             for (const pattern of phonePatterns) {
                 const matches = description.match(pattern);
                 if (matches && matches.length > 0) {
-                    // Clean the match
                     whatsapp = matches[0].replace(/[^\d+]/g, '');
-                    // Add +961 prefix if missing
                     if (whatsapp.length >= 7 && whatsapp.length <= 8 && !whatsapp.startsWith('+') && !whatsapp.startsWith('00')) {
                         whatsapp = '+961' + whatsapp;
                     } else if (whatsapp.startsWith('0') && whatsapp.length === 8) {
@@ -221,14 +272,13 @@ async function scrapeAdDetails(url) {
                 images.push(src);
             }
         });
-        // Also try og:image
         if (images.length === 0) {
             const ogImage = $('meta[property="og:image"]').attr('content');
             if (ogImage && ogImage.startsWith('http')) {
                 images.push(ogImage);
             }
         }
-        images = images.slice(0, 5); // Max 5 images
+        images = images.slice(0, 5);
         
         if (!title) {
             console.log(`⚠️ لم يتم العثور على عنوان للإعلان: ${url}`);
@@ -285,13 +335,13 @@ function mapExperience(text) {
  * Scrape jobs from OLX Lebanon
  */
 async function scrapeJobs() {
-    const adLinks = await scrapeListingPage(OLX_URLS.jobs);
+    const adItems = await scrapeListingPage(OLX_URLS.jobs);
     const results = { saved: 0, skipped: 0, errors: 0 };
     
-    for (const link of adLinks) {
+    for (const item of adItems) {
         try {
             await randomDelay();
-            const adData = await scrapeAdDetails(link);
+            const adData = await scrapeAdDetails(item.url, item.listPrice);
             
             if (!adData) {
                 results.skipped++;
@@ -312,16 +362,15 @@ async function scrapeJobs() {
                 source: 'olx',
                 sourceId: adData.sourceId,
                 sourceUrl: adData.sourceUrl,
-                status: 'pending', // تحتاج موافقة الأدمن
+                status: 'pending',
                 user: null
             });
             
             await ad.save();
             results.saved++;
-            console.log(`✅ تم حفظ: ${adData.title}`);
+            console.log(`✅ تم حفظ: ${adData.title} | ${adData.price || 'بدون سعر'}`);
         } catch (error) {
             if (error.code === 11000) {
-                // Duplicate sourceId - already exists
                 results.skipped++;
             } else {
                 results.errors++;
@@ -337,13 +386,13 @@ async function scrapeJobs() {
  * Scrape rentals from OLX Lebanon
  */
 async function scrapeRentals() {
-    const adLinks = await scrapeListingPage(OLX_URLS.rentals);
+    const adItems = await scrapeListingPage(OLX_URLS.rentals);
     const results = { saved: 0, skipped: 0, errors: 0 };
     
-    for (const link of adLinks) {
+    for (const item of adItems) {
         try {
             await randomDelay();
-            const adData = await scrapeAdDetails(link);
+            const adData = await scrapeAdDetails(item.url, item.listPrice);
             
             if (!adData) {
                 results.skipped++;
@@ -362,13 +411,13 @@ async function scrapeRentals() {
                 source: 'olx',
                 sourceId: adData.sourceId,
                 sourceUrl: adData.sourceUrl,
-                status: 'pending', // تحتاج موافقة الأدمن
+                status: 'pending',
                 user: null
             });
             
             await ad.save();
             results.saved++;
-            console.log(`✅ تم حفظ: ${adData.title}`);
+            console.log(`✅ تم حفظ: ${adData.title} | ${adData.price || 'بدون سعر'}`);
         } catch (error) {
             if (error.code === 11000) {
                 results.skipped++;
@@ -386,13 +435,13 @@ async function scrapeRentals() {
  * Scrape rooms for rent from OLX Lebanon (under $400)
  */
 async function scrapeRooms() {
-    const adLinks = await scrapeListingPage(OLX_URLS.rooms);
+    const adItems = await scrapeListingPage(OLX_URLS.rooms);
     const results = { saved: 0, skipped: 0, errors: 0 };
     
-    for (const link of adLinks) {
+    for (const item of adItems) {
         try {
             await randomDelay();
-            const adData = await scrapeAdDetails(link);
+            const adData = await scrapeAdDetails(item.url, item.listPrice);
             
             if (!adData) {
                 results.skipped++;
@@ -417,7 +466,7 @@ async function scrapeRooms() {
                 description: adData.description,
                 category: 'realestate',
                 subCategory: 'apartment_rent',
-                price: adData.price || 'اتصل للسعر',
+                price: adData.price,
                 location: adData.location,
                 whatsapp: adData.whatsapp,
                 images: adData.images,
