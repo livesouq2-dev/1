@@ -58,8 +58,7 @@ const adSchema = new mongoose.Schema({
         default: 'user'
     },
     sourceId: {
-        type: String,
-        default: null
+        type: String
     },
     sourceUrl: {
         type: String,
@@ -102,8 +101,8 @@ adSchema.index({ user: 1, createdAt: -1 });
 // Status only (for admin queries)
 adSchema.index({ status: 1 });
 
-// Source ID index for deduplication of scraped ads
-adSchema.index({ sourceId: 1 }, { unique: true, sparse: true });
+// Source ID index for deduplication of scraped ads (partial: only enforces on docs that have sourceId)
+adSchema.index({ sourceId: 1 }, { unique: true, partialFilterExpression: { sourceId: { $exists: true } } });
 
 // Text search index for search functionality
 adSchema.index({ title: 'text', description: 'text', location: 'text' });
